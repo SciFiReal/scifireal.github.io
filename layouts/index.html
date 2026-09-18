@@ -1,0 +1,112 @@
+{{ define "main" }}
+<style>
+  /* Hub 页面专用样式 - 已移除 transition:all，改用精确过渡 */
+  .hub-hero { text-align: center; padding: 4rem 1rem 3rem; max-width: 800px; margin: 0 auto; }
+  .hub-hero h1 { 
+    font-size: 2.5rem; margin-bottom: 0.5rem; 
+    background: linear-gradient(90deg, var(--link-color), var(--text-secondary)); 
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
+  }
+  .hub-hero p { font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 2rem; }
+  
+  .hub-grid { max-width: 900px; margin: 0 auto; padding: 0 1.5rem; }
+  .hub-grid h2 { 
+    font-size: 1.5rem; margin-bottom: 1.5rem; 
+    border-bottom: 2px solid var(--border-color); padding-bottom: 0.5rem; 
+    color: var(--text-primary);
+  }
+  
+  .hub-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+  
+  .hub-card {
+    border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem;
+    text-decoration: none; color: var(--text-primary); background: var(--card-bg);
+    /* ⚠️ 关键修改：只过渡需要的属性，避免 all 导致的渲染延迟 */
+    transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.25s ease;
+    position: relative; overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  
+  .hub-card::before {
+    content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%;
+    background: var(--accent, var(--link-color)); border-radius: 4px 0 0 4px;
+  }
+  
+  .hub-card:hover { 
+    border-color: var(--accent, var(--link-color)); transform: translateY(-5px); 
+    box-shadow: 0 10px 25px -5px var(--shadow-color), 0 8px 10px -6px var(--shadow-color); 
+  }
+  
+  .hub-card .icon { font-size: 2.5rem; margin-bottom: 1rem; }
+  .hub-card h3 { margin: 0 0 0.5rem; font-size: 1.3rem; color: var(--text-primary); }
+  .hub-card p { font-size: 0.95rem; color: var(--text-secondary); margin: 0 0 1.5rem; line-height: 1.6; flex-grow: 1; }
+  .hub-card .meta { font-size: 0.85rem; color: var(--text-secondary); font-weight: 600; text-align: right; }
+
+  .hub-recent { max-width: 900px; margin: 0 auto 4rem; padding: 0 1.5rem; }
+  
+  /* 确保最近更新列表也使用统一变量 */
+  .hub-recent .post-entry { 
+    background: transparent !important; 
+    border-bottom: 1px solid var(--border-color);
+  }
+  .hub-recent .post-entry a { color: var(--text-primary) !important; }
+</style>
+
+<!-- 1. Hero 区域 -->
+<section class="hub-hero">
+  <h1>👋 {{ .Title | default "AI Dev Hub" }}</h1>
+  <p>{{ .Description | default "探索大模型、RAG 与 Agent 的工程化实践" }}</p>
+</section>
+
+<!-- 2. 模块卡片网格 -->
+<section class="hub-grid">
+  <div class="hub-cards">
+    <!-- 查找 ai-dev 分区下的所有子 Section，并按 weight 排序 -->
+    {{ $aiSection := where .Site.Sections "Section" "ai-dev" }}
+    {{ if $aiSection }}
+      {{ range (index $aiSection 0).Sections.ByWeight }}
+        <a href="{{ .Permalink }}" class="hub-card" style="--accent: {{ .Params.color | default "#3b82f6" }}">
+          <span class="icon">{{ .Params.icon | default "📦" }}</span>
+          <h3>{{ .Title }}</h3>
+          <p>{{ .Description }}</p>
+          <span class="meta">{{ len .Pages }} 篇文章 →</span>
+        </a>
+      {{ end }}
+    {{ else }}
+      <p style="opacity:0.6; text-align:center;">暂未找到 ai-dev 目录，请检查 content/ai-dev/ 结构</p>
+    {{ end }}
+  </div>
+</section>
+
+<!-- 3. 最近更新文章列表 (复用 PaperMod 的列表样式) -->
+<section class="hub-recent">
+  <h2 style="font-size: 1.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem;">📝 最近更新</h2>
+  <!-- 获取 ai-dev 分区下的所有常规文章，取最新 5 篇 -->
+  {{ $pages := where .Site.RegularPages "Section" "ai-dev" }}
+  {{ if $pages }}
+    {{ range first 5 $pages }}
+      <article class="post-entry" style="margin-bottom: 1rem;">
+        <header class="entry-header">
+          <h2 style="font-size: 1.1rem; margin: 0;">
+            <a href="{{ .Permalink }}" style="text-decoration: none; color: var(--primary);">
+              {{ .Title }}
+            </a>
+          </h2>
+        </header>
+        <div class="entry-meta" style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.3rem;">
+          <time>{{ .Date.Format "2006-01-02" }}</time>
+          {{ with .Params.tags }}
+            · {{ range first 2 . }}<span style="margin-left: 0.5rem;">#{{ . }}</span>{{ end }}
+          {{ end }}
+        </div>
+      </article>
+    {{ end }}
+  {{ else }}
+    <p style="opacity:0.6;">暂无文章，请在 content/ai-dev/ 下添加 Markdown 文件</p>
+  {{ end }}
+</section>
+
+{{ end }}

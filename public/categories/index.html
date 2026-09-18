@@ -10,7 +10,7 @@
 <meta name="description" content="">
 <meta name="author" content="">
 <link rel="canonical" href="http://localhost:1313/categories/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.89ca4972ab5e6aaa05e9a0dae0c4bb64b26585bc79e36f5cf33614eea0283abe.css" integrity="sha256-icpJcqteaqoF6aDa4MS7ZLJlhbx5429c8zYU7qAoOr4=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.9d822707666dcfb7f939d7cea4330a7b3353ef5cc9edad6b83a5cb95497209a3.css" integrity="sha256-nYInB2Ztz7f5OdfOpDMKezNT71zJ7a1rg6XLlUlyCaM=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
@@ -65,6 +65,67 @@
         document.querySelector("html").dataset.theme = 'light';
     }
 
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+
+
+
+
+
+<script>
+    
+    (function() {
+        const savedTheme = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const isDark = savedTheme === "dark" || (!savedTheme && prefersDark);
+        
+        if (isDark) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    })();
+
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('theme-toggle');
+        
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function(e) {
+                const html = document.documentElement;
+                const body = document.body;
+                const isDark = html.classList.contains('dark');
+                
+                
+                body.style.opacity = '0';
+                
+                
+                setTimeout(() => {
+                    if (isDark) {
+                        html.classList.remove('dark');
+                        localStorage.setItem("theme", "light");
+                    } else {
+                        html.classList.add('dark');
+                        localStorage.setItem("theme", "dark");
+                    }
+                    
+                    
+                    const sunIcon = toggleBtn.querySelector('.sun, [class*="sun"]');
+                    const moonIcon = toggleBtn.querySelector('.moon, [class*="moon"]');
+                    if (sunIcon && moonIcon) {
+                        sunIcon.style.display = !isDark ? 'none' : 'block';
+                        moonIcon.style.display = !isDark ? 'block' : 'none';
+                    }
+                    
+                    
+                    body.style.opacity = '1';
+                }, 150); 
+                
+            }, true);
+        }
+    });
 </script>
 </head>
 <body class="list" id="top">

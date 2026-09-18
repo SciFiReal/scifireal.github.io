@@ -5,11 +5,35 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="noindex, nofollow">
-<title>404 Page not found | 我的博客</title>
+<title>My First Post | 我的博客</title>
 <meta name="keywords" content="">
-<meta name="description" content="">
+<meta name="description" content="这是我第一篇关于AI的博客
+ghout.# 关于扩展 MedicalAiSystem 项目的建议
+先说明一点：我无法实时访问 GitHub 仓库，以下建议基于此类医疗 AI 项目的典型结构（Flask &#43; sklearn 模型 &#43; HTML 前端）。你可以对照实际代码确认，如果项目结构差异较大，可以把目录结构发给我，我再针对性分析。
+一、先读懂项目的核心流程
+这类项目通常遵循这条链路，添加功能前建议先梳理清楚：
+text
+前端表单 → 路由接收数据 → 加载模型 → 预测 → 返回结果渲染页面
+重点关注三个位置：
+
+app.py 中的路由函数（数据怎么进来）
+模型加载和预测的代码（joblib.load() / pickle.load()）
+templates/ 下的表单页面（数据格式和字段）
+
+二、如何添加自己的功能（实操示例）
+以添加一种新的疾病预测为例，这是最典型的扩展方式：
+第 1 步：训练新模型
+python
+# train_new_model.py
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+import joblib
+data = pd.read_csv(&lsquo;data/liver_disease.csv&rsquo;)  # 从 UCI/Kaggle 下载
+X = data.drop(&rsquo;target&rsquo;, axis=1)
+y = data[&rsquo;target&rsquo;]
+model = RandomForestClassifier()">
 <meta name="author" content="">
-<link rel="canonical" href="http://localhost:1313/404.html">
+<link rel="canonical" href="http://localhost:1313/posts/my-first-post/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.9d822707666dcfb7f939d7cea4330a7b3353ef5cc9edad6b83a5cb95497209a3.css" integrity="sha256-nYInB2Ztz7f5OdfOpDMKezNT71zJ7a1rg6XLlUlyCaM=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
@@ -18,7 +42,7 @@
 <link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/404.html">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/my-first-post/">
 <noscript>
     <style>
         #theme-toggle,
@@ -127,7 +151,7 @@
     });
 </script>
 </head>
-<body class="list" id="top">
+<body id="top">
     <header class="header">
     <nav class="header-nav">
         <div class="logo">
@@ -160,7 +184,108 @@
     </nav>
 </header>
 <main class="main">
-<div class="not-found">404</div>
+
+<article class="post-single">
+  <header class="post-header">
+    <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">Home</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="post-title entry-hint-parent">
+      My First Post
+    </h1>
+    <div class="post-meta">
+
+<span title='2026-09-16 17:59:55 +0800 CST'>September 16, 2026</span>&nbsp;·&nbsp;<span>1 min</span>
+
+</div>
+  </header> 
+  <div class="post-content md-content"><p>这是我第一篇关于AI的博客</p>
+<p>ghout.</think># 关于扩展 MedicalAiSystem 项目的建议</p>
+<p>先说明一点：我无法实时访问 GitHub 仓库，以下建议基于此类医疗 AI 项目的典型结构（Flask + sklearn 模型 + HTML 前端）。你可以对照实际代码确认，如果项目结构差异较大，可以把目录结构发给我，我再针对性分析。</p>
+<h2 id="一先读懂项目的核心流程">一、先读懂项目的核心流程<a hidden class="anchor" aria-hidden="true" href="#一先读懂项目的核心流程">#</a></h2>
+<p>这类项目通常遵循这条链路，添加功能前建议先梳理清楚：</p>
+<p>text</p>
+<p>前端表单 → 路由接收数据 → 加载模型 → 预测 → 返回结果渲染页面</p>
+<p>重点关注三个位置：</p>
+<ul>
+<li><code>app.py</code> 中的路由函数（数据怎么进来）</li>
+<li>模型加载和预测的代码（<code>joblib.load()</code> / <code>pickle.load()</code>）</li>
+<li><code>templates/</code> 下的表单页面（数据格式和字段）</li>
+</ul>
+<h2 id="二如何添加自己的功能实操示例">二、如何添加自己的功能（实操示例）<a hidden class="anchor" aria-hidden="true" href="#二如何添加自己的功能实操示例">#</a></h2>
+<p>以<strong>添加一种新的疾病预测</strong>为例，这是最典型的扩展方式：</p>
+<p><strong>第 1 步：训练新模型</strong></p>
+<p>python</p>
+<p># train_new_model.py</p>
+<p>import pandas as pd</p>
+<p>from sklearn.ensemble import RandomForestClassifier</p>
+<p>import joblib</p>
+<p>data = pd.read_csv(&lsquo;data/liver_disease.csv&rsquo;)  # 从 UCI/Kaggle 下载</p>
+<p>X = data.drop(&rsquo;target&rsquo;, axis=1)</p>
+<p>y = data[&rsquo;target&rsquo;]</p>
+<p>model = RandomForestClassifier()</p>
+<p>model.fit(X, y)</p>
+<p>joblib.dump(model, &lsquo;model/liver_model.pkl&rsquo;)</p>
+<p><strong>第 2 步：在 app.py 添加路由</strong>（模仿现有预测路由的写法）</p>
+<p>python</p>
+<p>@app.route(&rsquo;/liver_predict&rsquo;, methods=[&lsquo;POST&rsquo;])</p>
+<p>def liver_predict():</p>
+<p>​    features = [float(request.form[k]) for k in [&lsquo;age&rsquo;, &lsquo;bilirubin&rsquo;, &lsquo;albumin&rsquo;, &hellip;]]</p>
+<p>​    model = joblib.load(&lsquo;model/liver_model.pkl&rsquo;)</p>
+<p>​    result = model.predict([features])[0]</p>
+<p>​    proba = model.predict_proba([features])[0]  # 顺便返回概率</p>
+<p>​    return render_template(&rsquo;liver_result.html&rsquo;, result=result, proba=proba)</p>
+<p><strong>第 3 步：添加前端页面</strong>，复制现有表单页面改字段即可。</p>
+<p>这个套路掌握后，本质上你可以无限扩展“新疾病预测模块”。</p>
+<h2 id="三可以扩展的功能方向按难度分级">三、可以扩展的功能方向（按难度分级）<a hidden class="anchor" aria-hidden="true" href="#三可以扩展的功能方向按难度分级">#</a></h2>
+<p><strong>⭐ 入门级（1-2天）</strong></p>
+<ul>
+<li>接入更多疾病数据集（UCI 有心脏病、糖尿病、肝病、乳腺癌等经典数据集）</li>
+<li>预测结果可视化：用 ECharts 画概率条形图、雷达图展示各项指标</li>
+<li>历史预测记录（存到 SQLite，展示查询历史）</li>
+<li>前端美化（Bootstrap / Element UI）</li>
+</ul>
+<p><strong>⭐⭐ 进阶级（适合课程设计/毕设加分）</strong></p>
+<ul>
+<li><strong>用户系统</strong>：Flask-Login 实现注册登录，用户各自管理健康档案</li>
+<li><strong>症状自查</strong>：用户勾选多个症状 → 用朴素贝叶斯/规则匹配推荐可能疾病</li>
+<li><strong>多模型对比</strong>：同一疾病跑 SVM、随机森林、XGBoost，展示各模型准确率对比</li>
+<li><strong>药品与科室推荐</strong>：根据诊断结果推荐挂号科室、常用药说明</li>
+<li><strong>模型可解释性</strong>：集成 SHAP，展示哪些指标影响了预测结果（医疗场景很加分）</li>
+</ul>
+<p><strong>⭐⭐⭐ 高阶级（可以往简历/竞赛方向做）</strong></p>
+<ul>
+<li><strong>医学影像识别</strong>：用 CNN（PyTorch）做 X光片肺炎识别、皮肤病变分类，Pneumonia-MNIST 等数据集容易上手</li>
+<li><strong>智能问答机器人</strong>：接入大模型 API（如通义千问/DeepSeek），做医疗咨询对话，配合 RAG 检索医学知识库</li>
+<li><strong>电子病历 NLP 分析</strong>：命名实体识别提取病历中的症状、药物实体</li>
+<li><strong>前后端分离重构</strong>：Vue/React 前端 + Flask/FastAPI 后端 + 接口文档</li>
+</ul>
+<h2 id="四几个建议">四、几个建议<a hidden class="anchor" aria-hidden="true" href="#四几个建议">#</a></h2>
+<ol>
+<li><strong>循序渐进</strong>：先做入门级功能熟悉全流程，再挑一个进阶功能做深，比铺开一堆浅功能更有价值</li>
+<li><strong>加免责声明</strong>：医疗 AI 项目要注明“仅供参考，不构成医疗建议”，这是基本的合规意识</li>
+<li><strong>保留 git 记录</strong>：每加一个功能 commit 一次，既方便回滚也能体现你的开发过程</li>
+<li><strong>挑一个有亮点的方向</strong>：如果是为了求职或毕设，“影像识别”和“LLM 问答 + RAG”是目前最有吸引力的两个方向</li>
+</ol>
+<p>你目前的项目具体包含哪些功能（比如已经支持哪些疾病预测）？用的什么技术栈？告诉我后我可以给出更具体的改造方案。我可以给出更具体的改造方案。</p>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
     </main>
     
 <footer class="footer">

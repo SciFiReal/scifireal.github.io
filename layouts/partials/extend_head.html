@@ -1,0 +1,62 @@
+<!-- 思源宋体 Noto Serif SC + Inter -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
+
+
+
+<!-- 2. 【核心】注入 PaperMod 的主题切换逻辑 JS -->
+<!-- 这段代码必须在 body 渲染前执行，否则切换无效 -->
+<script>
+    // 1. 初始化主题（防闪烁）
+    (function() {
+        const savedTheme = localStorage.getItem("theme");
+        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        const isDark = savedTheme === "dark" || (!savedTheme && prefersDark);
+        
+        if (isDark) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    })();
+
+    // 2. 绑定切换逻辑（带全局淡入淡出效果）
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleBtn = document.getElementById('theme-toggle');
+        
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', function(e) {
+                const html = document.documentElement;
+                const body = document.body;
+                const isDark = html.classList.contains('dark');
+                
+                // 1. 瞬间隐藏页面 (利用 opacity 过渡)
+                body.style.opacity = '0';
+                
+                // 2. 延迟 150ms 后执行主题切换 (等待页面完全隐藏)
+                setTimeout(() => {
+                    if (isDark) {
+                        html.classList.remove('dark');
+                        localStorage.setItem("theme", "light");
+                    } else {
+                        html.classList.add('dark');
+                        localStorage.setItem("theme", "dark");
+                    }
+                    
+                    // 3. 手动切换图标 (兼容 PaperMod)
+                    const sunIcon = toggleBtn.querySelector('.sun, [class*="sun"]');
+                    const moonIcon = toggleBtn.querySelector('.moon, [class*="moon"]');
+                    if (sunIcon && moonIcon) {
+                        sunIcon.style.display = !isDark ? 'none' : 'block';
+                        moonIcon.style.display = !isDark ? 'block' : 'none';
+                    }
+                    
+                    // 4. 瞬间显示页面
+                    body.style.opacity = '1';
+                }, 150); // 150ms 刚好是 opacity 过渡的一半时间，感觉最丝滑
+                
+            }, true);
+        }
+    });
+</script>

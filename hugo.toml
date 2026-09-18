@@ -2,3 +2,14 @@ baseURL = 'https://scifireal.github.io/'
 locale = 'zh-cn'
 title = '我的博客'
 theme = 'PaperMod'
+
+# ⚠️ 必须添加这个配置块，PaperMod 才能正常工作
+[params]
+  defaultTheme = "auto"         # 支持 light/dark/auto 切换
+  disableThemeToggle = false    # 显示太阳/月亮切换按钮
+  ShowReadingTime = true        # 可选：显示阅读时间
+  ShowBreadCrumbs = true        # 可选：显示面包屑导航
+
+# 允许在 Markdown 中使用原始 HTML（字体链接和自定义组件需要）
+[markup.goldmark.renderer]
+  unsafe = true

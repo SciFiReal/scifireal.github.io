@@ -1,0 +1,114 @@
+/* =========================================
+   1. 全局 CSS 变量定义 (核心机制)
+   ========================================= */
+:root {
+    /* ☀️ 太阳模式 (亮色) */
+    --bg-primary: rgb(246, 242, 234);
+    --card-bg: #fffdf8;
+    --text-primary: #2c2a25;
+    --text-secondary: #6b6560;
+    --link-color: #8b6914;
+    --link-hover: #6b4f0e;
+    --border-color: rgba(44, 42, 37, 0.1);
+    --shadow-color: rgba(44, 42, 37, 0.06);
+    --font-body: 'Noto Serif SC', 'Georgia', serif;
+    --font-ui: 'Inter', -apple-system, sans-serif;
+}
+
+.dark {
+    /* 🌙 月亮模式 (暗色) */
+    --bg-primary: rgb(23, 20, 15);
+    --card-bg: rgb(28, 25, 19); 
+    --text-primary: #e8e4dc;
+    --text-secondary: #9c958a;
+    --link-color: #d4a84b;
+    --link-hover: #eec06a;
+    --border-color: rgba(232, 228, 220, 0.08);
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --font-body: 'Noto Serif SC', 'Georgia', serif; 
+    --font-ui: 'Inter', -apple-system, sans-serif;
+}
+
+/* =========================================
+   2. 全局基础样式与平滑切换机制
+   ========================================= */
+/* ⚠️ 核心：只给 body 添加 opacity 过渡，用于 JS 控制的整体淡入淡出 */
+body {
+    background-color: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    font-family: var(--font-body) !important;
+    font-size: 17px;
+    line-height: 1.8;
+    letter-spacing: 0.02em;
+    
+    /* 仅允许 opacity 和 transform 过渡，禁止颜色过渡！ */
+    transition: opacity 0.15s ease-in-out !important; 
+    opacity: 1; /* 默认完全可见 */
+}
+
+/* 标题与UI元素字体 */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-body) !important;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.nav, .hub-card-title, .post-meta, footer, button, .pagination {
+    font-family: var(--font-ui) !important;
+    color: var(--text-secondary);
+}
+
+a { color: var(--link-color) !important; }
+a:hover { color: var(--link-hover) !important; }
+
+code, pre, .highlight {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace !important;
+    font-size: 0.9em;
+}
+
+/* =========================================
+   3. 组件适配 (文章列表 / 导航 / Hub卡片)
+   ========================================= */
+.post-entry, .post-content, .entry-header {
+    background-color: transparent !important;
+    color: var(--text-primary);
+}
+
+.post-entry:hover {
+    background-color: var(--card-bg) !important;
+    border-radius: 8px;
+}
+
+.nav, footer {
+    background-color: var(--bg-primary) !important;
+    border-color: var(--border-color) !important;
+}
+
+.hub-card {
+    background-color: var(--card-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 2px 8px var(--shadow-color) !important;
+    /* 仅保留 transform 和 box-shadow 的过渡，用于悬浮效果 */
+    transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+.hub-card:hover {
+    box-shadow: 0 4px 16px var(--shadow-color) !important;
+    transform: translateY(-2px);
+}
+
+/* =========================================
+   4. PaperMod 原生暗色模式强制覆盖
+   ========================================= */
+.dark .main, .dark .wrapper, .dark .inner {
+    background-color: var(--bg-primary) !important;
+}
+
+.dark code, .dark pre, .dark .highlight {
+    background-color: #1a1712 !important;
+    color: #dcd6cc !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+.dark .hub-card, .dark .post-entry:hover {
+    border: 1px solid var(--border-color) !important;
+}

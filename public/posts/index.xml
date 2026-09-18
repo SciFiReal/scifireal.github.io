@@ -6,15 +6,48 @@
     <description>Recent content in Posts on 我的博客</description>
     <generator>Hugo</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Wed, 16 Sep 2026 15:48:44 +0800</lastBuildDate>
+    <lastBuildDate>Wed, 16 Sep 2026 17:59:55 +0800</lastBuildDate>
     <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>My First Post</title>
+      <link>http://localhost:1313/posts/my-first-post/</link>
+      <pubDate>Wed, 16 Sep 2026 17:59:55 +0800</pubDate>
+      <guid>http://localhost:1313/posts/my-first-post/</guid>
+      <description>&lt;p&gt;这是我第一篇关于AI的博客&lt;/p&gt;
+&lt;p&gt;ghout.&lt;/think&gt;# 关于扩展 MedicalAiSystem 项目的建议&lt;/p&gt;
+&lt;p&gt;先说明一点：我无法实时访问 GitHub 仓库，以下建议基于此类医疗 AI 项目的典型结构（Flask + sklearn 模型 + HTML 前端）。你可以对照实际代码确认，如果项目结构差异较大，可以把目录结构发给我，我再针对性分析。&lt;/p&gt;
+&lt;h2 id=&#34;一先读懂项目的核心流程&#34;&gt;一、先读懂项目的核心流程&lt;/h2&gt;
+&lt;p&gt;这类项目通常遵循这条链路，添加功能前建议先梳理清楚：&lt;/p&gt;
+&lt;p&gt;text&lt;/p&gt;
+&lt;p&gt;前端表单 → 路由接收数据 → 加载模型 → 预测 → 返回结果渲染页面&lt;/p&gt;
+&lt;p&gt;重点关注三个位置：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;app.py&lt;/code&gt; 中的路由函数（数据怎么进来）&lt;/li&gt;
+&lt;li&gt;模型加载和预测的代码（&lt;code&gt;joblib.load()&lt;/code&gt; / &lt;code&gt;pickle.load()&lt;/code&gt;）&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;templates/&lt;/code&gt; 下的表单页面（数据格式和字段）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;二如何添加自己的功能实操示例&#34;&gt;二、如何添加自己的功能（实操示例）&lt;/h2&gt;
+&lt;p&gt;以&lt;strong&gt;添加一种新的疾病预测&lt;/strong&gt;为例，这是最典型的扩展方式：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;第 1 步：训练新模型&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;python&lt;/p&gt;
+&lt;p&gt;# train_new_model.py&lt;/p&gt;
+&lt;p&gt;import pandas as pd&lt;/p&gt;
+&lt;p&gt;from sklearn.ensemble import RandomForestClassifier&lt;/p&gt;
+&lt;p&gt;import joblib&lt;/p&gt;
+&lt;p&gt;data = pd.read_csv(&amp;lsquo;data/liver_disease.csv&amp;rsquo;)  # 从 UCI/Kaggle 下载&lt;/p&gt;
+&lt;p&gt;X = data.drop(&amp;rsquo;target&amp;rsquo;, axis=1)&lt;/p&gt;
+&lt;p&gt;y = data[&amp;rsquo;target&amp;rsquo;]&lt;/p&gt;
+&lt;p&gt;model = RandomForestClassifier()&lt;/p&gt;</description>
+    </item>
     <item>
       <title>Hello World</title>
       <link>http://localhost:1313/posts/hello-world/</link>
       <pubDate>Wed, 16 Sep 2026 15:48:44 +0800</pubDate>
       <guid>http://localhost:1313/posts/hello-world/</guid>
       <description>&lt;h2 id=&#34;这是我的第一个博客&#34;&gt;这是我的第一个博客&lt;/h2&gt;
-&lt;p&gt;从头开始学习计算机&lt;/p&gt;</description>
+&lt;p&gt;从头开始学习计算机&lt;/p&gt;
+&lt;p&gt;title: &amp;ldquo;LangChain&amp;rdquo;
+description: &amp;ldquo;从 Model I/O 到 Agent：框架学习路线与实战踩坑记录。&amp;rdquo;&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>
