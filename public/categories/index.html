@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" dir="auto" data-theme="auto">
+<html lang="en" dir="auto" data-theme="dark">
 
 <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="noindex, nofollow">
-<title>Categories | 我的博客</title>
+<title>Categories | AI应用开发</title>
 <meta name="keywords" content="">
-<meta name="description" content="">
-<meta name="author" content="">
+<meta name="description" content="专注 AI 应用开发、RAG、Agent 与工程实践的个人笔记。">
+<meta name="author" content="诺影">
 <link rel="canonical" href="http://localhost:1313/categories/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.9d822707666dcfb7f939d7cea4330a7b3353ef5cc9edad6b83a5cb95497209a3.css" integrity="sha256-nYInB2Ztz7f5OdfOpDMKezNT71zJ7a1rg6XLlUlyCaM=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.16095fdfebc9e0a0d17a48c0ccdffac6b80f6edce578c17ba7019fd210f27040.css" integrity="sha256-Fglf3&#43;vJ4KDRekjAzN/6xrgPbtzleMF7pwGf0hDycEA=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
@@ -28,111 +28,143 @@
         }
 
     </style>
-    <style>
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --theme: rgb(29, 30, 32);
-                --entry: rgb(46, 46, 51);
-                --primary: rgb(218, 218, 219);
-                --secondary: rgb(155, 156, 157);
-                --tertiary: rgb(65, 66, 68);
-                --content: rgb(196, 196, 197);
-                --code-block-bg: rgb(46, 46, 51);
-                --code-bg: rgb(55, 56, 62);
-                --border: rgb(51, 51, 51);
-                color-scheme: dark;
-            }
-
-            .list {
-                background: var(--theme);
-            }
-
-            .toc {
-                background: var(--entry);
-            }
-        }
-
-    </style>
 </noscript>
 <script>
-    if (localStorage.getItem("pref-theme") === "dark") {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else if (localStorage.getItem("pref-theme") === "light") {
-       document.querySelector("html").dataset.theme = 'light';
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.querySelector("html").dataset.theme = 'dark';
-    } else {
+    if (localStorage.getItem("pref-theme") === "light") {
         document.querySelector("html").dataset.theme = 'light';
     }
 
-</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Serif+SC:wght@400;500;700&display=swap" rel="stylesheet">
-
-
-
-
-
+</script><style>
+     
+    .header { transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease; }
+</style>
 <script>
-    
-    (function() {
-        const savedTheme = localStorage.getItem("theme");
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const isDark = savedTheme === "dark" || (!savedTheme && prefersDark);
-        
-        if (isDark) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-    })();
+(function() {
+    'use strict';
 
     
-    document.addEventListener('DOMContentLoaded', function() {
-        const toggleBtn = document.getElementById('theme-toggle');
-        
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', function(e) {
-                const html = document.documentElement;
-                const body = document.body;
-                const isDark = html.classList.contains('dark');
+    var header = document.getElementById('site-header');
+    if (header) {
+        var onScroll = function() {
+            if (window.scrollY > 20) {
+                header.classList.add('header--scrolled');
+            } else {
+                header.classList.remove('header--scrolled');
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function initTocSpy() {
+        var tocNav = document.getElementById('toc-nav');
+        if (!tocNav) return;
+
+        var links = tocNav.querySelectorAll('a[data-heading]');
+        if (links.length === 0) return;
+
+        var headings = [];
+        links.forEach(function(link) {
+            var id = link.getAttribute('data-heading');
+            var heading = document.getElementById(id);
+            if (heading) {
+                headings.push({ el: heading, link: link });
+            }
+        });
+
+        if (headings.length === 0) return;
+
+        var activeLink = null;
+
+        function setActive(link) {
+            if (activeLink === link) return;
+            if (activeLink) activeLink.classList.remove('toc-active');
+            if (link) {
+                link.classList.add('toc-active');
                 
-                
-                body.style.opacity = '0';
-                
-                
-                setTimeout(() => {
-                    if (isDark) {
-                        html.classList.remove('dark');
-                        localStorage.setItem("theme", "light");
-                    } else {
-                        html.classList.add('dark');
-                        localStorage.setItem("theme", "dark");
+                var sidebar = document.getElementById('sidebar-toc');
+                if (sidebar) {
+                    var linkRect = link.getBoundingClientRect();
+                    var sidebarRect = sidebar.getBoundingClientRect();
+                    if (linkRect.top < sidebarRect.top + 40 || linkRect.bottom > sidebarRect.bottom - 20) {
+                        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
                     }
-                    
-                    
-                    const sunIcon = toggleBtn.querySelector('.sun, [class*="sun"]');
-                    const moonIcon = toggleBtn.querySelector('.moon, [class*="moon"]');
-                    if (sunIcon && moonIcon) {
-                        sunIcon.style.display = !isDark ? 'none' : 'block';
-                        moonIcon.style.display = !isDark ? 'block' : 'none';
-                    }
-                    
-                    
-                    body.style.opacity = '1';
-                }, 150); 
-                
-            }, true);
+                }
+            }
+            activeLink = link;
         }
-    });
+
+        function onScroll() {
+            var scrollPos = window.scrollY + 100;
+            var current = null;
+
+            for (var i = headings.length - 1; i >= 0; i--) {
+                if (headings[i].el.offsetTop <= scrollPos) {
+                    current = headings[i];
+                    break;
+                }
+            }
+
+            if (current) {
+                setActive(current.link);
+            } else if (headings.length > 0) {
+                setActive(headings[0].link);
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function addCodeLangLabels() {
+        var blocks = document.querySelectorAll('.post-content pre, .md-content .highlight');
+        blocks.forEach(function(block) {
+            if (block.querySelector('.code-lang-label')) return;
+
+            var code = block.querySelector('code');
+            if (!code) return;
+
+            var lang = '';
+            var classes = code.className || '';
+            var match = classes.match(/language-(\w+)/);
+            if (match) {
+                lang = match[1];
+            } else {
+                match = classes.match(/language-(\S+)/);
+                if (match) lang = match[1];
+            }
+
+            if (lang) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = lang;
+                block.style.position = 'relative';
+                block.insertBefore(label, block.firstChild);
+            }
+        });
+    }
+
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initTocSpy();
+            addCodeLangLabels();
+        });
+    } else {
+        initTocSpy();
+        addCodeLangLabels();
+    }
+})();
 </script>
+
 </head>
 <body class="list" id="top">
-    <header class="header">
+    <header class="header" id="site-header">
     <nav class="header-nav">
         <div class="logo">
-            <a href="http://localhost:1313/" accesskey="h" title="我的博客 (Alt + H)">我的博客</a>
+            <a href="http://localhost:1313/" accesskey="h" title="AI应用开发 (Alt + H)">AI应用开发</a>
             <div class="logo-switches">
                 <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
                     <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
@@ -157,6 +189,46 @@
             </div>
         </div>
         <ul id="menu" class="menu">
+            <li>
+                <a href="http://localhost:1313/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/llm-basics/" title="大模型基础认知">
+                    <span>大模型基础认知</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/ag-practice/" title="RAG">
+                    <span>RAG</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/agent-dev/" title="Agent">
+                    <span>Agent</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/fine-tuning-deployment/" title="微调和部署">
+                    <span>微调和部署</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/transformer/" title="transformer">
+                    <span>transformer</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/project-interview/" title="项目和面试">
+                    <span>项目和面试</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
         </ul>
     </nav>
 </header>
@@ -166,11 +238,14 @@
 </header>
 
 <ul class="terms-tags">
+            <li>
+                <a href="http://localhost:1313/categories/ai%E5%BA%94%E7%94%A8%E5%BC%80%E5%8F%91/">AI应用开发 <sup><strong><sup>1</sup></strong></sup> </a>
+            </li>
 </ul>
     </main>
     
 <footer class="footer">
-        <span>&copy; 2026 <a href="http://localhost:1313/">我的博客</a></span> · 
+        <span>&copy; 2026 <a href="http://localhost:1313/">AI应用开发</a></span> · 
 
     
     
