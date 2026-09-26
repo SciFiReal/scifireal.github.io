@@ -5,12 +5,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="noindex, nofollow">
-<title>大模型工程实践笔记 | AI应用开发</title>
+<title>大模型基础认知 | AI应用开发</title>
 <meta name="keywords" content="">
-<meta name="description" content="记录大模型应用开发的学习之路，学习路线：基础认知 → 应用开发 → RAG → Agent → 微调与部署 → Transformer → 项目与面试">
+<meta name="description" content="大模型应用开发的基本概念、岗位区分与学习路线。">
 <meta name="author" content="诺影">
 <link rel="canonical" href="http://localhost:1313/llm-basics/">
-<link crossorigin="anonymous" href="/assets/css/stylesheet.16095fdfebc9e0a0d17a48c0ccdffac6b80f6edce578c17ba7019fd210f27040.css" integrity="sha256-Fglf3&#43;vJ4KDRekjAzN/6xrgPbtzleMF7pwGf0hDycEA=" rel="preload stylesheet" as="style">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.5a82633bff0cf1dc4f27a1f68cef78791cf0ec94da7f742fd9a62b45ee46b37c.css" integrity="sha256-WoJjO/8M8dxPJ6H2jO94eRzw7JTaf3Qv2aYrRe5Gs3w=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
@@ -188,6 +188,11 @@
                 </button>
             </div>
         </div>
+        <a class="search-trigger" href="http://localhost:1313/search/" title="搜索" accesskey="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+        </a>
         <ul id="menu" class="menu">
             <li>
                 <a href="http://localhost:1313/" title="首页">
@@ -232,42 +237,42 @@
         </ul>
     </nav>
 </header>
-<main class="main"> 
-<header class="page-header">
-  <h1>
-    大模型工程实践笔记
-  </h1>
-  <div class="post-description">
-    记录大模型应用开发的学习之路，学习路线：基础认知 → 应用开发 → RAG → Agent → 微调与部署 → Transformer → 项目与面试
-  </div>
-</header>
-<div class="post-content md-content"><!-- 下方可以写一些 Markdown 格式的自我介绍，但在我们的自定义布局中，主要使用 frontmatter 里的数据 -->
+<main class="main">
 
+<div class="list-page">
+
+  <header class="list-header"><nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">首页</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+    <h1 class="list-title">大模型基础认知
+    </h1>
+    <p class="list-description">大模型应用开发的基本概念、岗位区分与学习路线。</p>
+    <span class="list-count">1 篇文章</span>
+  </header>
+  <div class="list-content post-content md-content"><!-- 下方可以写一些 Markdown 格式的自我介绍，但在我们的自定义布局中，主要使用 frontmatter 里的数据 -->
+
+
+  </div>
+  <div class="list-entries">
+    <a class="list-card" href="http://localhost:1313/llm-basics/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">
+      <div class="list-card-main">
+        <h2 class="list-card-title">大模型学习路线</h2>
+        <div class="list-card-meta">2026-09-20 · 1 分钟 · 18 字
+        </div>
+      </div>
+      <div class="list-card-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+        </svg>
+      </div>
+    </a>
+  </div>
 
 </div>
-
-<article class="post-entry"> 
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">大模型学习路线
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>大模型学习路线 大模型对于大多数人是非常陌生的概念，我上大学的时候很少有人知道，如果不是特别关注国外的科技新闻，根本久不知道机器学习、深度学习等概念。关注国外的新闻对于我们普通学校来说，很难得一件事情，因为没有老师会在上课去讲一些前言知识，还在教着十年前的基础知识。当大模型出来的时候，国内有大部分计算机老师估计还不知道是什么东西，AI是什么，根本不敢想象科技发展如何之快。我认为计算机是一门实践性很强的学科，大胆点，所有学科都应该去实践中学习，不能停留在课堂，既然都能考上大学，说明学习能力是没问题的。大学应该注重培养自学能力，老师少说，学生多动手。而不是学习技术去看B站和看某鱼的盗版课。如果学生在大学学不到任何技术和有用的知识，我觉得学生都应该去主动思考和学习。
-想学大模型应用开发，首先要搞懂两个概念。一是大模型应用开发、算法岗、开发岗有什么区别？；二是大模型应用开发到底在做什么？
-大模型应用开发、算法岗、开发岗有什么区别？ 开发岗大家都不陌生，传统的开发岗位有C&#43;&#43;/Java/Go等等，应用在PC端/移动端/Web/游戏等领域。
-算法岗，也叫算法工程师，工作的任务就是改模型，比如训练、微调、对齐、基准测试等等，对学历、数学能力要求高，一般这个岗位是找博士和一些非常优秀的硕士。对于大多数我们来说，传统开发岗位&#43;LLM能力=大模型应用开发。
-有些人不理解LLM开发学Python，跟Java后端开发没啥关系，但问题是你要的是把大模型能力应用实际业务当中，因此就需要Java的万古流传的后端框架，才能稳得住大模型。因此你学习大模型应用开发主要面向以下几类人学：
-1）搞业务，Java后端开发，学大模型应用
-2）其它领域比如工业领域，游戏领域，C&#43;&#43;，JavaScript，C#，C开发，也需要学习大模型应用
-3）单纯学大模型开发做demo，用python后端和vue/react框架来做开发
-大模型应用开发：核心工作就是基于大模型的能力，构建应用系统。RAG、Agent、对话系统等都是主战场。你不需要训练模型，不需要推到公式，你需要的是工程化能力，把大模型的能力稳定地跑在生产环境里。例如：
-RAG系统：企业知识库问答。用户提问→检索文档、组装Prompt 调用模型 返回答案。你需要设计检索策略、处理幻觉、优化延迟 Agent系统：让大模型自主调用工具完成任务，比如工单处理、数据分析。你得设计工具、处理多步推理得稳定性、防止死循环 对话系统：智能客服、销售助手。你得处理上下文管理、意图识别、多轮对话 部署与优化：vLLM部署、KV Cache优化、推荐成本控制。跑个demo谁都会，上线扛住并发 </p>
-  </div>
-  <footer class="entry-footer">
-
-<span title='2026-09-20 13:53:13 +0800 CST'>September 20, 2026</span>&nbsp;·&nbsp;<span>1 min</span>&nbsp;·&nbsp;<span>18 words</span>&nbsp;·&nbsp;<span>诺影</span></footer>
-  <a class="entry-link" aria-label="post link to 大模型学习路线" href="http://localhost:1313/llm-basics/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/"></a>
-</article>
     </main>
     
 <footer class="footer">

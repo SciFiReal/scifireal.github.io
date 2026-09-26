@@ -1,8 +1,8 @@
 ---
 
-title: "大模型工程实践笔记" # 你的博客名称
+title: "项目和面试"
 
-description: "记录大模型应用开发的学习之路，学习路线：基础认知 → 应用开发 → RAG → Agent → 微调与部署 → Transformer → 项目与面试" 
+description: "大模型工程实践笔记与面试准备要点。"
 
 ---
 

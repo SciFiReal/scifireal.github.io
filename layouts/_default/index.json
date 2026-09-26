@@ -1,0 +1,18 @@
+{{- $pages := site.RegularPages -}}
+{{- $pages = where $pages "Title" "!=" "" -}}
+{{- $pages = where $pages "Section" "!=" "" -}}
+[
+{{- $first := true -}}
+{{- range $p := $pages -}}
+  {{- if not $first }},{{ end -}}
+  {{- $first = false -}}
+  {
+    "title": {{ $p.Title | jsonify }},
+    "url": {{ $p.Permalink | jsonify }},
+    "date": {{ $p.Date.Format "2006-01-02" | jsonify }},
+    "description": {{ $p.Description | default "" | jsonify }},
+    "content": {{ $p.Plain | jsonify }},
+    "section": {{ $p.CurrentSection.Title | default "" | jsonify }}
+  }
+{{- end -}}
+]

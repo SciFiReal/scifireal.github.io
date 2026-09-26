@@ -86,6 +86,11 @@
         </div>
         {{- $currentPage := . }}
         {{- $currentPermalink := $currentPage.Permalink | absLangURL }}
+        <a class="search-trigger" href="{{ "search/" | absLangURL }}" title="搜索" accesskey="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+        </a>
         <ul id="menu" class="menu">
             {{- range site.Menus.main }}
             {{- $menu_item_url := (cond (strings.HasSuffix .URL "/") .URL (printf "%s/" .URL) ) | absLangURL }}

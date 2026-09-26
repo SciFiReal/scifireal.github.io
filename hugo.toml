@@ -7,6 +7,16 @@ enableRobotsTXT = true
 enableEmoji = true
 pygmentsUseClasses = true
 
+[outputs]
+  home = ["HTML", "JSON"]
+
+[outputFormats]
+  [outputFormats.JSON]
+    mediaType = "application/json"
+    baseName = "index"
+    isPlainText = true
+    notAlternative = true
+
 [markup]
   [markup.goldmark.renderer]
     unsafe = true
@@ -29,7 +39,7 @@ pygmentsUseClasses = true
   ShowReadingTime = true
   ShowWordCount = true
   ShowPostNavLinks = true
-  ShowBreadCrumbs = false
+  ShowBreadCrumbs = true
   ShowShareButtons = false
 
   [params.homeInfoParams]

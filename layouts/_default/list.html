@@ -1,0 +1,83 @@
+{{- define "main" }}
+
+<div class="list-page">
+
+  <header class="list-header">
+    {{- partial "breadcrumbs.html" . }}
+    <h1 class="list-title">
+      {{- if .Data.Term }}
+        {{- .Data.Term }}
+      {{- else }}
+        {{- .Title | default .LinkTitle }}
+      {{- end }}
+    </h1>
+    {{- if .Description }}
+    <p class="list-description">{{ .Description | markdownify }}</p>
+    {{- end }}
+    {{- $count := len .RegularPages }}
+    {{- if $count }}
+    <span class="list-count">{{ $count }} 篇文章</span>
+    {{- end }}
+  </header>
+
+  {{- if .Content }}
+  <div class="list-content post-content md-content">
+    {{- if not (.Param "disableAnchoredHeadings") }}
+    {{- partial "anchored_headings.html" .Content -}}
+    {{- else }}{{ .Content }}{{ end }}
+  </div>
+  {{- end }}
+
+  {{- $pages := .RegularPages }}
+  {{- if .IsHome }}
+  {{- $pages = where site.RegularPages "Type" "in" site.Params.mainSections }}
+  {{- end }}
+
+  {{- $paginator := .Paginate $pages }}
+
+  {{- if $paginator.Pages }}
+  <div class="list-entries">
+    {{- range $paginator.Pages }}
+    <a class="list-card" href="{{ .Permalink }}">
+      <div class="list-card-main">
+        <h2 class="list-card-title">{{ .Title }}</h2>
+        {{- if .Description }}
+        <p class="list-card-desc">{{ .Description }}</p>
+        {{- end }}
+        <div class="list-card-meta">
+          {{- .Date | time.Format "2006-01-02" }}
+          {{- if .ReadingTime }} · {{ .ReadingTime }} 分钟{{ end }}
+          {{- if .WordCount }} · {{ .WordCount }} 字{{ end }}
+        </div>
+      </div>
+      <div class="list-card-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+        </svg>
+      </div>
+    </a>
+    {{- end }}
+  </div>
+  {{- end }}
+
+  {{- if gt $paginator.TotalPages 1 }}
+  <nav class="pagination">
+    {{- if $paginator.HasPrev }}
+    <a class="pagination-prev" href="{{ $paginator.Prev.URL | absURL }}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      上一页
+    </a>
+    {{- end }}
+    <span class="pagination-info">{{ $paginator.PageNumber }} / {{ $paginator.TotalPages }}</span>
+    {{- if $paginator.HasNext }}
+    <a class="pagination-next" href="{{ $paginator.Next.URL | absURL }}">
+      下一页
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+    </a>
+    {{- end }}
+  </nav>
+  {{- end }}
+
+</div>
+
+{{- end }}{{/* end main */}}

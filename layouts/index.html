@@ -1,0 +1,75 @@
+{{- define "main" }}
+
+<div class="home-page">
+
+  <section class="home-hero">
+    <div class="hero-avatar">
+      {{- if site.Params.label.icon }}
+        {{- $img := resources.Get site.Params.label.icon }}
+        {{- if $img }}
+        <img src="{{ $img.Permalink }}" alt="avatar">
+        {{- end }}
+      {{- end }}
+    </div>
+    <h1 class="hero-title">{{ site.Params.author | default site.Title }}</h1>
+    <p class="hero-tagline">{{ site.Params.description }}</p>
+    {{- with site.Params.socialIcons }}
+    <div class="hero-social">
+      {{- partial "social_icons.html" (dict "align" "center") }}
+    </div>
+    {{- end }}
+  </section>
+
+  <section class="home-topics">
+    <h2 class="section-label">学习路线</h2>
+    <div class="topics-grid">
+      {{- range site.Sections }}
+        {{- $section := . }}
+        {{- $menuName := .LinkTitle }}
+        {{- range site.Menus.main }}
+          {{- $menuUrl := .URL | absLangURL }}
+          {{- $sectionUrl := $section.Permalink }}
+          {{- if eq $menuUrl $sectionUrl }}
+            {{- $menuName = .Name }}
+          {{- end }}
+        {{- end }}
+        {{- $count := len .RegularPages }}
+        <a class="topic-card" href="{{ .Permalink }}">
+          <div class="topic-card-inner">
+            <h3 class="topic-name">{{ $menuName }}</h3>
+            <span class="topic-count">{{ $count }} 篇</span>
+          </div>
+        </a>
+      {{- end }}
+    </div>
+  </section>
+
+  {{- $recent := where site.RegularPages "Date.Year" ">" 2000 }}
+  {{- $recent = $recent.ByDate.Reverse }}
+  {{- $recent = first 5 $recent }}
+  {{- if $recent }}
+  <section class="home-recent">
+    <div class="section-label-row">
+      <h2 class="section-label">最近更新</h2>
+    </div>
+    <div class="recent-list">
+      {{- range $recent }}
+      <a class="recent-item" href="{{ .Permalink }}">
+        <div class="recent-item-main">
+          <h3 class="recent-title">{{ .Title }}</h3>
+          {{- with .Description }}
+          <p class="recent-desc">{{ . }}</p>
+          {{- end }}
+        </div>
+        <div class="recent-meta">
+          {{- .Date | time.Format "2006-01-02" }}
+        </div>
+      </a>
+      {{- end }}
+    </div>
+  </section>
+  {{- end }}
+
+</div>
+
+{{- end }}{{/* end main */}}

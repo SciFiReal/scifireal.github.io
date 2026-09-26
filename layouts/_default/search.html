@@ -1,0 +1,129 @@
+{{- define "main" }}
+
+<div class="search-page">
+  <header class="search-header">
+    <h1 class="search-title">搜索</h1>
+    <div class="search-input-wrap">
+      <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+      </svg>
+      <input
+        type="text"
+        id="search-input"
+        class="search-input"
+        placeholder="{{ .Params.placeholder | default "搜索文章..." }}"
+        autocomplete="off"
+        autofocus
+      >
+      <kbd class="search-kbd">ESC</kbd>
+    </div>
+  </header>
+
+  <div id="search-results" class="search-results">
+    <div class="search-empty">
+      <p>输入关键词开始搜索</p>
+      <p class="search-hint">支持标题、内容、分类模糊匹配</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+<script>
+(function() {
+  var fuse = null;
+  var searchIndex = null;
+  var input = document.getElementById('search-input');
+  var resultsEl = document.getElementById('search-results');
+  var debounceTimer = null;
+
+  function loadIndex() {
+    if (searchIndex) return Promise.resolve(searchIndex);
+    return fetch('/index.json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        searchIndex = data;
+        fuse = new Fuse(data, {
+          keys: [
+            { name: 'title', weight: 0.4 },
+            { name: 'description', weight: 0.2 },
+            { name: 'content', weight: 0.3 },
+            { name: 'section', weight: 0.1 }
+          ],
+          threshold: 0.3,
+          includeMatches: true,
+          minMatchCharLength: 2
+        });
+        return data;
+      });
+  }
+
+  function renderResults(results, query) {
+    if (results.length === 0) {
+      resultsEl.innerHTML = '<div class="search-empty"><p>没有找到相关文章</p><p class="search-hint">试试其他关键词</p></div>';
+      return;
+    }
+
+    var html = '<div class="search-results-list">';
+    results.forEach(function(result) {
+      var item = result.item;
+      var desc = item.description || '';
+      if (!desc && item.content) {
+        desc = item.content.substring(0, 150);
+      }
+      html += '<a class="search-result-item" href="' + item.url + '">';
+      html += '<div class="search-result-main">';
+      html += '<h2 class="search-result-title">' + escapeHtml(item.title) + '</h2>';
+      if (desc) {
+        html += '<p class="search-result-desc">' + escapeHtml(desc) + '</p>';
+      }
+      html += '<div class="search-result-meta">';
+      if (item.section) html += '<span>' + escapeHtml(item.section) + '</span>';
+      if (item.date) html += '<span>' + item.date + '</span>';
+      html += '</div>';
+      html += '</div>';
+      html += '<div class="search-result-arrow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></div>';
+      html += '</a>';
+    });
+    html += '</div>';
+    resultsEl.innerHTML = html;
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function doSearch(query) {
+    if (!query || query.length < 2) {
+      resultsEl.innerHTML = '<div class="search-empty"><p>输入关键词开始搜索</p><p class="search-hint">支持标题、内容、分类模糊匹配</p></div>';
+      return;
+    }
+
+    loadIndex().then(function() {
+      var results = fuse.search(query);
+      renderResults(results.slice(0, 20), query);
+    });
+  }
+
+  input.addEventListener('input', function(e) {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(function() {
+      doSearch(e.target.value.trim());
+    }, 200);
+  });
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      input.value = '';
+      resultsEl.innerHTML = '<div class="search-empty"><p>输入关键词开始搜索</p><p class="search-hint">支持标题、内容、分类模糊匹配</p></div>';
+      input.blur();
+    }
+  });
+
+  // Pre-load index
+  loadIndex();
+})();
+</script>
+
+{{- end }}

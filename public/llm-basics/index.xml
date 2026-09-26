@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>大模型工程实践笔记 on AI应用开发</title>
-    <link>http://localhost:1313/llm-basics/</link>
-    <description>Recent content in 大模型工程实践笔记 on AI应用开发</description>
+    <title>大模型基础认知 on AI应用开发</title>
+    <link>http://localhost:58963/llm-basics/</link>
+    <description>Recent content in 大模型基础认知 on AI应用开发</description>
     <generator>Hugo</generator>
     <language>zh-cn</language>
     <lastBuildDate>Sun, 20 Sep 2026 13:53:13 +0800</lastBuildDate>
-    <atom:link href="http://localhost:1313/llm-basics/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:58963/llm-basics/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>大模型学习路线</title>
-      <link>http://localhost:1313/llm-basics/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/</link>
+      <link>http://localhost:58963/llm-basics/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/</link>
       <pubDate>Sun, 20 Sep 2026 13:53:13 +0800</pubDate>
-      <guid>http://localhost:1313/llm-basics/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/</guid>
+      <guid>http://localhost:58963/llm-basics/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/</guid>
       <description>&lt;h1 id=&#34;大模型学习路线&#34;&gt;大模型学习路线&lt;/h1&gt;
 &lt;p&gt;大模型对于大多数人是非常陌生的概念，我上大学的时候很少有人知道，如果不是特别关注国外的科技新闻，根本久不知道机器学习、深度学习等概念。关注国外的新闻对于我们普通学校来说，很难得一件事情，因为没有老师会在上课去讲一些前言知识，还在教着十年前的基础知识。当大模型出来的时候，国内有大部分计算机老师估计还不知道是什么东西，AI是什么，根本不敢想象科技发展如何之快。我认为计算机是一门实践性很强的学科，大胆点，所有学科都应该去实践中学习，不能停留在课堂，既然都能考上大学，说明学习能力是没问题的。大学应该注重培养自学能力，老师少说，学生多动手。而不是学习技术去看B站和看某鱼的盗版课。如果学生在大学学不到任何技术和有用的知识，我觉得学生都应该去主动思考和学习。&lt;/p&gt;
 &lt;p&gt;想学大模型应用开发，首先要搞懂两个概念。一是大模型应用开发、算法岗、开发岗有什么区别？；二是大模型应用开发到底在做什么？&lt;/p&gt;

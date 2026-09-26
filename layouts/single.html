@@ -58,8 +58,53 @@
         {{- if (and site.Params.ShowShareButtons (ne .Params.disableShare true)) }}
         {{- partial "share_icons.html" . -}}
         {{- end }}
-        {{- if (.Param "ShowPostNavLinks") }}
-        {{- partial "post_nav_links.html" . }}
+
+        {{- /* 系列导航：同分类下的上一篇/下一篇 */ -}}
+        {{- $section := .CurrentSection }}
+        {{- $sectionPages := $section.RegularPages.ByDate }}
+        {{- $total := len $sectionPages }}
+        {{- if gt $total 1 }}
+          {{- $currentURL := .Permalink }}
+          {{- $prev := false }}
+          {{- $next := false }}
+          {{- range $i, $p := $sectionPages }}
+            {{- if eq $p.Permalink $currentURL }}
+              {{- if gt $i 0 }}
+                {{- $prev = index $sectionPages (sub $i 1) }}
+              {{- end }}
+              {{- if lt (add $i 1) $total }}
+                {{- $next = index $sectionPages (add $i 1) }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
+          {{- if or $prev $next }}
+          <nav class="series-nav">
+            <div class="series-nav-label">
+              <span>{{ $section.Title }} 系列</span>
+              <span>{{ $total }} 篇</span>
+            </div>
+            <div class="series-nav-links">
+              {{- if $prev }}
+              <a class="series-nav-prev" href="{{ $prev.Permalink }}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                <div>
+                  <span class="series-nav-dir">上一篇</span>
+                  <span class="series-nav-title">{{ $prev.Title }}</span>
+                </div>
+              </a>
+              {{- end }}
+              {{- if $next }}
+              <a class="series-nav-next" href="{{ $next.Permalink }}">
+                <div>
+                  <span class="series-nav-dir">下一篇</span>
+                  <span class="series-nav-title">{{ $next.Title }}</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </a>
+              {{- end }}
+            </div>
+          </nav>
+          {{- end }}
         {{- end }}
       </footer>
 
@@ -79,10 +124,10 @@
         <ul>
           {{- range $headers -}}
           {{- $headerLevel := index (findRE "[2-4]" . 1) 0 -}}
-          {{- $id := index (findRE `(id="(.*?)"|id='(.*?)')` . 9) 0 }}
-          {{- $cleanedID := replaceRE `(?:id=["']|["']$)` "" $id }}
-          {{- $header := replaceRE "<h[2-4].*?>((.|\n)*?)</h[2-4]>" "$1" . -}}
           {{- $headerLevel := len (seq $headerLevel) -}}
+          {{- $id := index (findRE "id=\"[^\"]*\"" . 9) 0 }}
+          {{- $cleanedID := replace (replace $id "id=\"" "") "\"" "" }}
+          {{- $header := replaceRE "<h[2-4].*?>((.|\n)*?)</h[2-4]>" "$1" . -}}
           <li class="toc-h{{ $headerLevel }}">
             <a href="#{{- $cleanedID -}}" data-heading="{{- $cleanedID -}}">{{- $header | plainify | safeHTML -}}</a>
           </li>
