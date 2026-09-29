@@ -1,11 +1,26 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
-    <title>Tags on AI应用开发</title>
-    <link>http://localhost:58963/tags/</link>
-    <description>Recent content in Tags on AI应用开发</description>
+    <title>Tags on SciFiReal</title>
+    <link>http://localhost:1313/tags/</link>
+    <description>Recent content in Tags on SciFiReal</description>
     <generator>Hugo</generator>
     <language>zh-cn</language>
-    <atom:link href="http://localhost:58963/tags/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 20 Sep 2026 13:53:13 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>大模型</title>
+      <link>http://localhost:1313/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/</link>
+      <pubDate>Sun, 20 Sep 2026 13:53:13 +0800</pubDate>
+      <guid>http://localhost:1313/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>学习路线</title>
+      <link>http://localhost:1313/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/</link>
+      <pubDate>Sun, 20 Sep 2026 13:53:13 +0800</pubDate>
+      <guid>http://localhost:1313/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/</guid>
+      <description></description>
+    </item>
   </channel>
 </rss>

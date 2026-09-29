@@ -20,30 +20,6 @@
     {{- end }}
   </section>
 
-  <section class="home-topics">
-    <h2 class="section-label">学习路线</h2>
-    <div class="topics-grid">
-      {{- range site.Sections }}
-        {{- $section := . }}
-        {{- $menuName := .LinkTitle }}
-        {{- range site.Menus.main }}
-          {{- $menuUrl := .URL | absLangURL }}
-          {{- $sectionUrl := $section.Permalink }}
-          {{- if eq $menuUrl $sectionUrl }}
-            {{- $menuName = .Name }}
-          {{- end }}
-        {{- end }}
-        {{- $count := len .RegularPages }}
-        <a class="topic-card" href="{{ .Permalink }}">
-          <div class="topic-card-inner">
-            <h3 class="topic-name">{{ $menuName }}</h3>
-            <span class="topic-count">{{ $count }} 篇</span>
-          </div>
-        </a>
-      {{- end }}
-    </div>
-  </section>
-
   {{- $recent := where site.RegularPages "Date.Year" ">" 2000 }}
   {{- $recent = $recent.ByDate.Reverse }}
   {{- $recent = first 5 $recent }}

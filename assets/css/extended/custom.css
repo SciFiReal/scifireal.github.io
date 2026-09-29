@@ -418,55 +418,6 @@ a:hover {
     border-bottom: none;
 }
 
-/* --- Topic cards grid --- */
-.home-topics {
-    padding-bottom: 56px;
-}
-
-.topics-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-}
-
-.topic-card {
-    display: block;
-    text-decoration: none;
-    background: var(--color-card);
-    border: 1px solid var(--color-border-light);
-    border-radius: var(--radius);
-    padding: 22px 24px;
-    transition: border-color 0.2s, background 0.2s, transform 0.2s;
-}
-
-.topic-card:hover {
-    border-color: var(--color-border);
-    background: var(--color-card-hover);
-    transform: translateY(-2px);
-}
-
-.topic-card-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.topic-name {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--color-text-bright);
-    margin: 0;
-    line-height: 1.4;
-}
-
-.topic-count {
-    font-size: 13px;
-    color: var(--color-muted-dim);
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-
 /* --- Recent articles --- */
 .home-recent {
     padding-bottom: 56px;
@@ -1884,10 +1835,6 @@ details .inner {
     .article-layout {
         gap: 36px;
     }
-
-    .topics-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
 }
 
 @media screen and (max-width: 900px) {
@@ -1956,15 +1903,6 @@ details .inner {
         font-size: 26px;
     }
 
-    .topics-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-
-    .topic-card {
-        padding: 16px 18px;
-    }
-
     .recent-item {
         flex-direction: column;
         gap: 4px;
@@ -2020,15 +1958,6 @@ details .inner {
     .menu a {
         font-size: 13px;
         padding: 4px 8px;
-    }
-
-    .topics-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-    }
-
-    .topic-name {
-        font-size: 14px;
     }
 
     .home-hero {

@@ -1,6 +1,6 @@
 baseURL = 'https://scifireal.github.io/'
 locale = 'zh-cn'
-title = 'AI应用开发'
+title = 'SciFiReal'
 theme = 'PaperMod'
 
 enableRobotsTXT = true
@@ -27,8 +27,8 @@ pygmentsUseClasses = true
     noClasses = false
 
 [params]
-  author = "诺影"
-  description = "专注 AI 应用开发、RAG、Agent 与工程实践的个人笔记。"
+  author = "Hi, I'm SciFiReal"
+  description = ""
   defaultTheme = "dark"
   disableThemeToggle = false
 
@@ -42,45 +42,24 @@ pygmentsUseClasses = true
   ShowBreadCrumbs = true
   ShowShareButtons = false
 
-  [params.homeInfoParams]
-    Title = "诺影的AI开发笔记"
-    Content = "记录 AI 应用开发中的原理、实践、踩坑与工程化思路。"
-
-
-    [[params.socialIcons]]
-      name = "github"
-      url = "https://github.com/SciFiReal"
-
 [menu]
   [[menu.main]]
     name = "首页"
     url = "/"
     weight = 1
   [[menu.main]]
-    name = "大模型基础认知"
-    url = "/llm-basics/"
+    name = "分类"
+    url = "/categories/"
     weight = 2
   [[menu.main]]
-    name = "RAG"
-    url = "/ag-practice/"
+    name = "标签墙"
+    url = "/tags/"
     weight = 3
   [[menu.main]]
-    name = "Agent"
-    url = "/agent-dev/"
+    name = "归档"
+    url = "/archives/"
     weight = 4
-  [[menu.main]]
-    name = "微调和部署"
-    url = "/fine-tuning-deployment/"
-    weight = 5
-  [[menu.main]]
-    name = "transformer"
-    url = "/transformer/"
-    weight = 6
-  [[menu.main]]
-    name = "项目和面试"
-    url = "/project-interview/"
-    weight = 7
   [[menu.main]]
     name = "关于"
     url = "/about/"
-    weight = 8
+    weight = 5

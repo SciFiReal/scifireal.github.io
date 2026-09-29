@@ -1,9 +1,23 @@
 ---
-
-title: "大模型工程实践笔记" # 你的博客名称
-
-description: "记录大模型应用开发的学习之路，学习路线：基础认知 → 应用开发 → RAG → Agent → 微调与部署 → Transformer → 项目与面试" 
-
+title: "关于"
 ---
 
-<!-- 下方可以写一些 Markdown 格式的自我介绍，但在我们的自定义布局中，主要使用 frontmatter 里的数据 -->
+## 你好，我是诺影
+
+一名正在探索 AI 应用开发的计算机专业学生。
+
+## 技术栈
+
+- **语言**：C++、Python、Java
+- **框架/工具**：Qt、Hugo、Spring Boot
+- **方向**：大模型应用开发（RAG、Agent、对话系统）
+
+## 这个博客
+
+记录学习过程中的踩坑与实践经验，涵盖 AI 应用开发、编程技巧、Bug 排查等内容。
+
+把踩过的坑写下来，就是最扎实的技术积累。
+
+## 联系方式
+
+- GitHub：[SciFiReal](https://github.com/SciFiReal)
