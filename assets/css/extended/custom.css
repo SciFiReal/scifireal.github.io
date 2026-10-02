@@ -933,15 +933,15 @@ a:hover {
 /* 代码块语言标签 */
 .code-lang-label {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: 8px;
+    right: 12px;
     background: var(--color-border-light);
     color: var(--color-muted);
     font-size: 11px;
     font-weight: 600;
     font-family: var(--font-sans);
-    padding: 4px 12px;
-    border-radius: var(--radius) 0 var(--radius-sm) 0;
+    padding: 3px 10px;
+    border-radius: var(--radius-sm);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     z-index: 2;
@@ -950,8 +950,8 @@ a:hover {
 
 .post-content pre code {
     display: grid;
-    padding: 40px 20px 20px;
-    font-size: 14.5px;
+    padding: 16px 20px;
+    font-size: 16px;
     line-height: 1.65;
     color: var(--color-text);
     background: transparent !important;
@@ -1944,7 +1944,7 @@ details .inner {
     }
 
     .post-content pre code {
-        font-size: 13px;
+        font-size: 14px;
     }
 
     .post-content h2 {
