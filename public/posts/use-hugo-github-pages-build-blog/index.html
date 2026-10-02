@@ -1,83 +1,580 @@
-<!doctype html><html lang=en dir=auto data-theme=dark><head><meta charset=utf-8><meta http-equiv=X-UA-Compatible content="IE=edge"><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><meta name=robots content="index, follow"><title>使用Hugo在Github Pages上搭建个人博客 | SciFiReal</title><meta name=keywords content="hugo,Github"><meta name=description content="Hugo静态博客部署Github.io实操教程，包含常见命令与避坑要点"><meta name=author content="Hi, I'm SciFiReal"><link rel=canonical href=https://scifireal.github.io/posts/use-hugo-github-pages-build-blog/><link crossorigin=anonymous href=/assets/css/stylesheet.54ea4c7d1b071133c7fc9c8b9ebe3463bae516143537c4305391ccff589d60f9.css integrity="sha256-VOpMfRsHETPH/JyLnr40Y7rlFhQ1N8QwU5HM/1idYPk=" rel="preload stylesheet" as=style><link rel=icon href=https://scifireal.github.io/favicon.ico><link rel=icon type=image/png sizes=16x16 href=https://scifireal.github.io/favicon-16x16.png><link rel=icon type=image/png sizes=32x32 href=https://scifireal.github.io/favicon-32x32.png><link rel=apple-touch-icon href=https://scifireal.github.io/apple-touch-icon.png><link rel=mask-icon href=https://scifireal.github.io/safari-pinned-tab.svg><meta name=theme-color content="#2e2e33"><meta name=msapplication-TileColor content="#2e2e33"><link rel=alternate hreflang=en href=https://scifireal.github.io/posts/use-hugo-github-pages-build-blog/><noscript><style>#theme-toggle,.top-link{display:none}</style></noscript><script>localStorage.getItem("pref-theme")==="light"&&(document.querySelector("html").dataset.theme="light")</script><style>.header{transition:background .3s ease,backdrop-filter .3s ease,box-shadow .3s ease}</style><script>(function(){"use strict";var t,e=document.getElementById("site-header");e&&(t=function(){window.scrollY>20?e.classList.add("header--scrolled"):e.classList.remove("header--scrolled")},window.addEventListener("scroll",t,{passive:!0}),t());function n(){var e,t,n,s=document.getElementById("toc-nav");if(!s)return;if(n=s.querySelectorAll("a[data-heading]"),n.length===0)return;if(e=[],n.forEach(function(t){var s=t.getAttribute("data-heading"),n=document.getElementById(s);n&&e.push({el:n,link:t})}),e.length===0)return;t=null;function o(e){if(t===e)return;if(t&&t.classList.remove("toc-active"),e){e.classList.add("toc-active");var n,s,o=document.getElementById("sidebar-toc");o&&(n=e.getBoundingClientRect(),s=o.getBoundingClientRect(),(n.top<s.top+40||n.bottom>s.bottom-20)&&e.scrollIntoView({block:"nearest",behavior:"smooth"}))}t=e}function i(){for(var s=window.scrollY+100,n=null,t=e.length-1;t>=0;t--)if(e[t].el.offsetTop<=s){n=e[t];break}n?o(n.link):e.length>0&&o(e[0].link)}window.addEventListener("scroll",i,{passive:!0}),i()}function s(){var e=document.querySelectorAll(".post-content pre, .md-content .highlight");e.forEach(function(e){if(e.querySelector(".code-lang-label"))return;var t,n,s,o,i=e.querySelector("code");if(!i)return;n="",o=i.className||"",t=o.match(/language-(\w+)/),t?n=t[1]:(t=o.match(/language-(\S+)/),t&&(n=t[1])),n&&(s=document.createElement("span"),s.className="code-lang-label",s.textContent=n,e.style.position="relative",e.insertBefore(s,e.firstChild))})}document.readyState==="loading"?document.addEventListener("DOMContentLoaded",function(){n(),s()}):(n(),s())})()</script><meta property="og:url" content="https://scifireal.github.io/posts/use-hugo-github-pages-build-blog/"><meta property="og:site_name" content="SciFiReal"><meta property="og:title" content="使用Hugo在Github Pages上搭建个人博客"><meta property="og:description" content="Hugo静态博客部署Github.io实操教程，包含常见命令与避坑要点"><meta property="og:locale" content="zh_cn"><meta property="og:type" content="article"><meta property="article:section" content="posts"><meta property="article:published_time" content="2026-10-02T08:59:47+08:00"><meta property="article:modified_time" content="2026-10-02T08:59:47+08:00"><meta property="article:tag" content="Hugo"><meta property="article:tag" content="Github"><meta name=twitter:card content="summary"><meta name=twitter:title content="使用Hugo在Github Pages上搭建个人博客"><meta name=twitter:description content="Hugo静态博客部署Github.io实操教程，包含常见命令与避坑要点"><script type=application/ld+json>{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Posts","item":"https://scifireal.github.io/posts/"},{"@type":"ListItem","position":2,"name":"使用Hugo在Github Pages上搭建个人博客","item":"https://scifireal.github.io/posts/use-hugo-github-pages-build-blog/"}]}</script><script type=application/ld+json>{"@context":"https://schema.org","@type":"BlogPosting","headline":"使用Hugo在Github Pages上搭建个人博客","name":"使用Hugo在Github Pages上搭建个人博客","description":"Hugo静态博客部署Github.io实操教程，包含常见命令与避坑要点","keywords":["hugo","Github"],"articleBody":"1.了解Github静态网站的搭建方式 1.1 什么是Github Pages Github Page是Github提供的免费网页托管服务。把网页文件放到Github仓库后，就能生成xxx.github.io网址，其他人可以访问，不用自己买服务器。静态网站的优点是打开快、安全、维护简单；缺点是交互能力弱，适合写博客，记笔记。\n1.2 什么是Hugo Hugo是一款开源免费的静态网站生成工具，用Go语言所写的，速度很快。简单理解就是你只需要写Markdown笔记文章，Hugo会自动把文章与主题模板，一次性转换成一堆html网页文件。不用写HTML、CSS前端代码，写完直接生成网页，之后上传到Github Pages就能访问。\n其它静态网站构建工具：\nHexo：基于Node.js，国内用户最多，中文教程、博客主题非常丰富。缺点是文章多的时候构建速度较慢。 VuePress/VitePress：VuePress是基于Vue，VitePress是它的升级版，速度更快。可以在Markdown嵌入Vue组件，适合写技术文档。 Jekyll：Github Pages原生支持。缺点是Ruby环境安装麻烦，构建慢。 其它的还有MkDocs，Docusaurus。 如何选择呢合适的工具呢？个人博客，最求简单快速使用Hugo；中文资源多，折腾主题使用Hexo；写技术文档、想页面交互使用VitePress；其它方式不建议使用。\n2. 部署个人博客 2.1 安装（Windows） （1）安装Hugo\nWindowns的cmd或powershell下用winget一键安装Hugo，缺点是会安装到C盘\nwinget install Hugo.Hugo.Extended 下载zip压缩包，拿到hugo.exe进行安装，下载位置https://github.com/gohugoio/hugo/releasesHugo.\n验证是否安装成功：终端输入hugo version 出现hugo v0.1xx.x ... extended一大串即是成功\n（2）本地创建站点\n在自定义文件目录下创建站点\nD:\\Computer\\blog\u003ehugo new site my-blog 初始化与安装主题（PaperMod）\nD:\\Computer\\blog\\my-blog\u003egit init // 初始化 D:\\Computer\\blog\\my-blog\u003egit submodule add // 添加主题https://github.com/adityatelange/hugo-PaperMod.git themes/PaperMod （3）修改配置\n修改根目录hugo.toml\nbaseURL = 'https://yourname.github.io/' # 先占位，第二阶段部署时改成真实地址 locale = 'zh-cn' title = '我的博客' theme = 'PaperMod' （4）写一篇笔记\nD:\\Computer\\blog\\my-blog\u003ehugo new content posts/hello-world.md hello-world.md默认构造如下：\ndate = '2026-09-16T15:48:44+08:00' draft = false # 注意：draft默认是true是草稿模式，正式文章要改为false title = 'Hello World' --- 内容区 （5）启动预览，浏览器打开\nD:\\Computer\\blog\\my-blog\u003ehugo server -D 2.2 部署到GitHub Pages 整体的流程：本地写文章 → git push 上传代码 → GitHub Actions 自动构建 → 别人访问 https://你的用户名.github.io\n（1）注册/登录Github\n（2）创建仓库\nRepository name：你的小写用户名.github.io，例如yougli.github.io（仓库名必须是你的用户名，要全部小写） 选择public（免费仓库托管需要公开仓库） 其它选项不要勾选 （3）配置git\n（4）修改baseURL\n修改根目录hugo.toml下的baseURL：\nbaseURL ='https://你的用户名.github.io' # https://yougli.github.io （5）创建自动构建配置\nGitHub上托管静态文件，需要用Hugo进行编译上去，这一步需要GitHub Actions 免费构建工具\n创建文件目录和文件\nD:\\Computer\\blog\\my-blog\u003emkdir .github\\workflows D:\\Computer\\blog\\my-blog\u003enotepad .github\\workflows\\hugo.yml 在hugo.yml添加以下内容\nname: Deploy Hugo site to GitHub Pages on: push: branches: - main workflow_dispatch: permissions: contents: read pages: write id-token: write jobs: build: runs-on: ubuntu-latest steps: - name: Checkout uses: actions/checkout@v4 with: submodules: recursive fetch-depth: 0 - name: Setup Hugo uses: peaceiris/actions-hugo@v3 with: hugo-version: 'latest' extended: true - name: Build run: hugo --minify - name: Upload artifact uses: actions/upload-pages-artifact@v3 with: path: ./public deploy: environment: name: github-pages url: ${{ steps.deployment.outputs.page_url }} runs-on: ubuntu-latest needs: build steps: - name: Deploy to GitHub Pages id: deployment uses: actions/deploy-pages@v4 submodules: recursive 会在构建时自动拉取 PaperMod 主题，这就是第一阶段用 git submodule add 安装主题的原因\n（6）推送到GitHub\n在D:\\Computer\\blog\\my-blog目录下使用git命令\ngit init git add . git commit -m \"first commit\" git branch -M main git remote add origin https://github.com/你的用户名/你的用户名(小写).github.io.git git push -u origin main 第一次执行 git push 时会弹出浏览器窗口要求登录 GitHub 授权\n（7）开启GitHub Pages\n打开个人博客的仓库，点击Settings，左侧栏Pages，在Build and deployment 下，把 Source 选择为 GitHub Actions\n（8）查看结果\n点击顶部Actions标签页，看到一条正在运行的Deploy Hugo site…任务，变绿色后，浏览器访问\nhttps://你的用户名.github.io # https://yougli.github.io 你的个人博客正式上线了\n草稿预览与发布控制\n本地写完.md笔记后，在D:\\Computer\\blog\\my-blog\u003ehugo server -D进行本地预览，Ctrl +C终止预览，预览之后再推送。\n记得正式推送要把draft: true改为draft: false\n","wordCount":"279","inLanguage":"en","datePublished":"2026-10-02T08:59:47+08:00","dateModified":"2026-10-02T08:59:47+08:00","author":{"@type":"Person","name":"Hi, I'm SciFiReal"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://scifireal.github.io/posts/use-hugo-github-pages-build-blog/"},"publisher":{"@type":"Organization","name":"SciFiReal","logo":{"@type":"ImageObject","url":"https://scifireal.github.io/favicon.ico"}}}</script></head><body id=top><header class=header id=site-header><nav class=header-nav><div class=logo><a href=https://scifireal.github.io/ accesskey=h title="SciFiReal (Alt + H)">SciFiReal</a><div class=logo-switches><button id=theme-toggle class=theme-toggle accesskey=t title="(Alt + T)" aria-label="Toggle theme">
-<svg class="moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-<svg class="sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></div><a class=search-trigger href=https://scifireal.github.io/search/ title=搜索 accesskey=/><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></a><ul id=menu class=menu><li><a href=https://scifireal.github.io/ title=首页><span>首页</span></a></li><li><a href=https://scifireal.github.io/categories/ title=分类><span>分类</span></a></li><li><a href=https://scifireal.github.io/tags/ title=标签墙><span>标签墙</span></a></li><li><a href=https://scifireal.github.io/archives/ title=归档><span>归档</span></a></li><li><a href=https://scifireal.github.io/about/ title=关于><span>关于</span></a></li></ul></nav></header><main class=main><div class=article-layout><div class=article-main><article class=post-single><header class=post-header><nav class=breadcrumbs role=navigation aria-label=Breadcrumb><a href=/>首页</a>
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"/></svg>
-<a href=/posts/>Posts</a>
-<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right"><polyline points="9 18 15 12 9 6"/></svg></nav><h1 class="post-title entry-hint-parent">使用Hugo在Github Pages上搭建个人博客</h1><div class=post-meta><span title='2026-10-02 08:59:47 +0800 CST'>October 2, 2026</span>&nbsp;·&nbsp;<span>2 min</span>&nbsp;·&nbsp;<span>279 words</span>&nbsp;·&nbsp;<span>Hi, I'm SciFiReal</span></div><div class=post-header-tags><a class=tag-pill href=https://scifireal.github.io/tags/hugo/>Hugo</a>
-<a class=tag-pill href=https://scifireal.github.io/tags/github/>Github</a></div></header><div class="post-content md-content"><h2 id=1了解github静态网站的搭建方式>1.了解Github静态网站的搭建方式<a hidden class=anchor aria-hidden=true href=#1了解github静态网站的搭建方式>#</a></h2><h3 id=11-什么是github-pages>1.1 什么是Github Pages<a hidden class=anchor aria-hidden=true href=#11-什么是github-pages>#</a></h3><p>Github Page是Github提供的免费网页托管服务。把网页文件放到Github仓库后，就能生成xxx.github.io网址，其他人可以访问，不用自己买服务器。静态网站的优点是打开快、安全、维护简单；缺点是交互能力弱，适合写博客，记笔记。</p><h3 id=12-什么是hugo>1.2 什么是Hugo<a hidden class=anchor aria-hidden=true href=#12-什么是hugo>#</a></h3><p>Hugo是一款开源免费的静态网站生成工具，用Go语言所写的，速度很快。简单理解就是你只需要写Markdown笔记文章，Hugo会自动把文章与主题模板，一次性转换成一堆html网页文件。不用写HTML、CSS前端代码，写完直接生成网页，之后上传到Github Pages就能访问。</p><p>其它静态网站构建工具：</p><blockquote><ol><li>Hexo：基于Node.js，国内用户最多，中文教程、博客主题非常丰富。缺点是文章多的时候构建速度较慢。</li><li>VuePress/VitePress：VuePress是基于Vue，VitePress是它的升级版，速度更快。可以在Markdown嵌入Vue组件，适合写技术文档。</li><li>Jekyll：Github Pages原生支持。缺点是Ruby环境安装麻烦，构建慢。</li><li>其它的还有MkDocs，Docusaurus。</li></ol></blockquote><p>如何选择呢合适的工具呢？个人博客，最求简单快速使用Hugo；中文资源多，折腾主题使用Hexo；写技术文档、想页面交互使用VitePress；其它方式不建议使用。</p><hr><h2 id=2-部署个人博客>2. 部署个人博客<a hidden class=anchor aria-hidden=true href=#2-部署个人博客>#</a></h2><h3 id=21-安装windows>2.1 安装（Windows）<a hidden class=anchor aria-hidden=true href=#21-安装windows>#</a></h3><p>（1）安装Hugo</p><ul><li><p>Windowns的cmd或powershell下用winget一键安装Hugo，缺点是会安装到C盘</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>winget install Hugo.Hugo.Extended
-</span></span></code></pre></div></li><li><p>下载zip压缩包，拿到hugo.exe进行安装，下载位置https://github.com/gohugoio/hugo/releasesHugo.</p></li></ul><blockquote><p>验证是否安装成功：终端输入<code>hugo version</code> 出现<code>hugo v0.1xx.x ... extended</code>一大串即是成功</p></blockquote><p>（2）本地创建站点</p><ul><li><p>在自定义文件目录下创建站点</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>D:<span class=se>\C</span>omputer<span class=se>\b</span>log&gt;hugo new site my-blog
-</span></span></code></pre></div></li><li><p>初始化与安装主题（PaperMod）</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>D:<span class=se>\C</span>omputer<span class=se>\b</span>log<span class=se>\m</span>y-blog&gt;git init  // 初始化
-</span></span><span class=line><span class=cl>D:<span class=se>\C</span>omputer<span class=se>\b</span>log<span class=se>\m</span>y-blog&gt;git submodule add   // 添加主题https://github.com/adityatelange/hugo-PaperMod.git themes/PaperMod
-</span></span></code></pre></div></li></ul><p>（3）修改配置</p><p>修改根目录hugo.toml</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>baseURL = &#39;https://yourname.github.io/&#39; # 先占位，第二阶段部署时改成真实地址
-</span></span><span class=line><span class=cl>locale = &#39;zh-cn&#39;
-</span></span><span class=line><span class=cl>title = &#39;我的博客&#39;
-</span></span><span class=line><span class=cl>theme = &#39;PaperMod&#39;
-</span></span></code></pre></div><p>（4）写一篇笔记</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>D:<span class=se>\C</span>omputer<span class=se>\b</span>log<span class=se>\m</span>y-blog&gt;hugo new content posts/hello-world.md
-</span></span></code></pre></div><p>hello-world.md默认构造如下：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>date = &#39;2026-09-16T15:48:44+08:00&#39; 
-</span></span><span class=line><span class=cl>draft = false  # 注意：draft默认是true是草稿模式，正式文章要改为false
-</span></span><span class=line><span class=cl>title = &#39;Hello World&#39;
-</span></span><span class=line><span class=cl>---
-</span></span><span class=line><span class=cl>内容区
-</span></span></code></pre></div><p>（5）启动预览，浏览器打开</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>D:<span class=se>\C</span>omputer<span class=se>\b</span>log<span class=se>\m</span>y-blog&gt;hugo server -D
-</span></span></code></pre></div><hr><h3 id=22-部署到github-pages>2.2 部署到GitHub Pages<a hidden class=anchor aria-hidden=true href=#22-部署到github-pages>#</a></h3><p>整体的流程：本地写文章 → git push 上传代码 → GitHub Actions 自动构建 → 别人访问
-https://你的用户名.github.io</p><p>（1）注册/登录Github</p><p>（2）创建仓库</p><ol><li>Repository name：你的小写用户名.github.io，例如yougli.github.io（仓库名必须是你的用户名，要全部小写）</li><li>选择public（免费仓库托管需要公开仓库）</li><li>其它选项不要勾选</li></ol><p>（3）配置git</p><p>（4）修改baseURL</p><p>修改根目录hugo.toml下的baseURL：</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>baseURL =&#39;https://你的用户名.github.io&#39; # https://yougli.github.io
-</span></span></code></pre></div><p>（5）创建自动构建配置</p><p>GitHub上托管静态文件，需要用Hugo进行编译上去，这一步需要GitHub Actions 免费构建工具</p><ol><li><p>创建文件目录和文件</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>D:<span class=se>\C</span>omputer<span class=se>\b</span>log<span class=se>\m</span>y-blog&gt;mkdir .github<span class=se>\w</span>orkflows
-</span></span><span class=line><span class=cl>D:<span class=se>\C</span>omputer<span class=se>\b</span>log<span class=se>\m</span>y-blog&gt;notepad .github<span class=se>\w</span>orkflows<span class=se>\h</span>ugo.yml
-</span></span></code></pre></div></li><li><p>在hugo.yml添加以下内容</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-yaml data-lang=yaml><span class=line><span class=cl><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>Deploy Hugo site to GitHub Pages</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=nt>on</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>push</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>branches</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=l>main</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>workflow_dispatch</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=nt>permissions</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>contents</span><span class=p>:</span><span class=w> </span><span class=l>read</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>pages</span><span class=p>:</span><span class=w> </span><span class=l>write</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>id-token</span><span class=p>:</span><span class=w> </span><span class=l>write</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=nt>jobs</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>build</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>runs-on</span><span class=p>:</span><span class=w> </span><span class=l>ubuntu-latest</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>steps</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>Checkout</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>uses</span><span class=p>:</span><span class=w> </span><span class=l>actions/checkout@v4</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>with</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>submodules</span><span class=p>:</span><span class=w> </span><span class=l>recursive</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>fetch-depth</span><span class=p>:</span><span class=w> </span><span class=m>0</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>Setup Hugo</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>uses</span><span class=p>:</span><span class=w> </span><span class=l>peaceiris/actions-hugo@v3</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>with</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>hugo-version</span><span class=p>:</span><span class=w> </span><span class=s1>&#39;latest&#39;</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>extended</span><span class=p>:</span><span class=w> </span><span class=kc>true</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>Build</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>run</span><span class=p>:</span><span class=w> </span><span class=l>hugo --minify</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>Upload artifact</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>uses</span><span class=p>:</span><span class=w> </span><span class=l>actions/upload-pages-artifact@v3</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>with</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>          </span><span class=nt>path</span><span class=p>:</span><span class=w> </span><span class=l>./public</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>  </span><span class=nt>deploy</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>environment</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>github-pages</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>      </span><span class=nt>url</span><span class=p>:</span><span class=w> </span><span class=l>${{ steps.deployment.outputs.page_url }}</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>runs-on</span><span class=p>:</span><span class=w> </span><span class=l>ubuntu-latest</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>needs</span><span class=p>:</span><span class=w> </span><span class=l>build</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nt>steps</span><span class=p>:</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>      </span>- <span class=nt>name</span><span class=p>:</span><span class=w> </span><span class=l>Deploy to GitHub Pages</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>id</span><span class=p>:</span><span class=w> </span><span class=l>deployment</span><span class=w>
-</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nt>uses</span><span class=p>:</span><span class=w> </span><span class=l>actions/deploy-pages@v4</span><span class=w>
-</span></span></span></code></pre></div><blockquote><p><code>submodules: recursive</code> 会在构建时自动拉取 PaperMod 主题，这就是第一阶段用 <code>git submodule add</code> 安装主题的原因</p></blockquote></li></ol><p>（6）推送到GitHub</p><p>在D:\Computer\blog\my-blog目录下使用git命令</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-bash data-lang=bash><span class=line><span class=cl>git init
-</span></span><span class=line><span class=cl>git add .
-</span></span><span class=line><span class=cl>git commit -m <span class=s2>&#34;first commit&#34;</span>
-</span></span><span class=line><span class=cl>git branch -M main
-</span></span><span class=line><span class=cl>git remote add origin https://github.com/你的用户名/你的用户名<span class=o>(</span>小写<span class=o>)</span>.github.io.git
-</span></span><span class=line><span class=cl>git push -u origin main
-</span></span></code></pre></div><p>第一次执行 <code>git push</code> 时会弹出浏览器窗口要求登录 GitHub 授权</p><p>（7）开启GitHub Pages</p><p>打开个人博客的仓库，点击Settings，左侧栏Pages，在Build and deployment 下，把 Source 选择为 GitHub Actions</p><p>（8）查看结果</p><p>点击顶部Actions标签页，看到一条正在运行的Deploy Hugo site&mldr;任务，变绿色后，浏览器访问</p><div class=highlight><pre tabindex=0 class=chroma><code class=language-text data-lang=text><span class=line><span class=cl>https://你的用户名.github.io   # https://yougli.github.io
-</span></span></code></pre></div><p>你的个人博客正式上线了</p><blockquote><p>草稿预览与发布控制</p><p>本地写完.md笔记后，在<code>D:\Computer\blog\my-blog>hugo server -D</code>进行本地预览，<code>Ctrl +C</code>终止预览，预览之后再推送。</p><p>记得正式推送要把<code>draft: true</code>改为<code>draft: false</code></p></blockquote></div><footer class=post-footer><nav class=series-nav><div class=series-nav-label><span>Posts 系列</span>
-<span>2 篇</span></div><div class=series-nav-links><a class=series-nav-prev href=https://scifireal.github.io/posts/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg><div><span class=series-nav-dir>上一篇</span>
-<span class=series-nav-title>大模型学习路线</span></div></a></div></nav></footer></article></div><aside class=article-sidebar><div class=sidebar-toc id=sidebar-toc><div class=toc-title>目录</div><nav id=toc-nav><ul><li class=toc-h2><a href=#1%e4%ba%86%e8%a7%a3github%e9%9d%99%e6%80%81%e7%bd%91%e7%ab%99%e7%9a%84%e6%90%ad%e5%bb%ba%e6%96%b9%e5%bc%8f data-heading=1了解github静态网站的搭建方式>1.了解Github静态网站的搭建方式</a></li><li class=toc-h3><a href=#11-%e4%bb%80%e4%b9%88%e6%98%afgithub-pages data-heading=11-什么是github-pages>1.1 什么是Github Pages</a></li><li class=toc-h3><a href=#12-%e4%bb%80%e4%b9%88%e6%98%afhugo data-heading=12-什么是hugo>1.2 什么是Hugo</a></li><li class=toc-h2><a href=#2-%e9%83%a8%e7%bd%b2%e4%b8%aa%e4%ba%ba%e5%8d%9a%e5%ae%a2 data-heading=2-部署个人博客>2. 部署个人博客</a></li><li class=toc-h3><a href=#21-%e5%ae%89%e8%a3%85windows data-heading=21-安装windows>2.1 安装（Windows）</a></li><li class=toc-h3><a href=#22-%e9%83%a8%e7%bd%b2%e5%88%b0github-pages data-heading=22-部署到github-pages>2.2 部署到GitHub Pages</a></li></ul></nav></div></aside></div></main><footer class=footer><span>&copy; 2026 <a href=https://scifireal.github.io/>SciFiReal</a></span> ·
-<span>Powered by
-<a href="https://gohugo.io/?utm_source=papermod" rel=noopener target=_blank>Hugo</a> &
-<a href=https://github.com/adityatelange/hugo-PaperMod/ rel=noopener target=_blank>PaperMod</a></span></footer><a href=#top id=top-link class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey=g><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>
-</a><script>let menu=document.getElementById("menu");if(menu){const e=localStorage.getItem("menu-scroll-position");e&&(menu.scrollLeft=parseInt(e,10)),menu.onscroll=function(){localStorage.setItem("menu-scroll-position",menu.scrollLeft)}}document.querySelectorAll('a[href^="#"]').forEach(e=>{e.addEventListener("click",function(e){e.preventDefault();var t=this.getAttribute("href").substr(1);window.matchMedia("(prefers-reduced-motion: reduce)").matches?document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView():document.querySelector(`[id='${decodeURIComponent(t)}']`).scrollIntoView({behavior:"smooth"}),t==="top"?history.replaceState(null,null," "):history.pushState(null,null,`#${t}`)})})</script><script>var toplink=document.getElementById("top-link");window.onscroll=function(){const e=window.innerHeight;document.body.scrollTop>e||document.documentElement.scrollTop>e?toplink.classList.remove("hidden"):toplink.classList.add("hidden")}</script><script>document.getElementById("theme-toggle").addEventListener("click",()=>{const e=document.querySelector("html");e.dataset.theme==="dark"?(e.dataset.theme="light",localStorage.setItem("pref-theme","light")):(e.dataset.theme="dark",localStorage.setItem("pref-theme","dark"))})</script><script>document.querySelectorAll("pre > code").forEach(e=>{const n=e.parentNode.parentNode,t=document.createElement("button");t.classList.add("copy-code"),t.innerHTML="copy";function s(){t.innerHTML="copied!",setTimeout(()=>{t.innerHTML="copy"},2e3)}t.addEventListener("click",t=>{if("clipboard"in navigator){navigator.clipboard.writeText(e.textContent),s();return}const n=document.createRange();n.selectNodeContents(e);const o=window.getSelection();o.removeAllRanges(),o.addRange(n);try{document.execCommand("copy"),s()}catch{}o.removeRange(n)}),n.classList.contains("highlight")?n.appendChild(t):n.parentNode.firstChild==n||(e.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName=="TABLE"?e.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(t):e.parentNode.appendChild(t))})</script></body></html>
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>使用Hugo在Github Pages上搭建个人博客 | SciFiReal</title>
+<meta name="keywords" content="hugo, Github">
+<meta name="description" content="Hugo静态博客部署Github.io实操教程，包含常见命令与避坑要点">
+<meta name="author" content="Hi, I&#39;m SciFiReal">
+<link rel="canonical" href="http://localhost:1313/posts/use-hugo-github-pages-build-blog/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.6f9e12a36815bbfceba889465c88a492671bb06e6d53fe7a7cb7fc2ce01651d5.css" integrity="sha256-b54So2gVu/zrqIlGXIikkmcbsG5tU/56fLf8LOAWUdU=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/use-hugo-github-pages-build-blog/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "light") {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><style>
+     
+    .header { transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease; }
+</style>
+<script>
+(function() {
+    'use strict';
+
+    
+    var header = document.getElementById('site-header');
+    if (header) {
+        var onScroll = function() {
+            if (window.scrollY > 20) {
+                header.classList.add('header--scrolled');
+            } else {
+                header.classList.remove('header--scrolled');
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function initTocSpy() {
+        var tocNav = document.getElementById('toc-nav');
+        if (!tocNav) return;
+
+        var links = tocNav.querySelectorAll('a[data-heading]');
+        if (links.length === 0) return;
+
+        var headings = [];
+        links.forEach(function(link) {
+            var id = link.getAttribute('data-heading');
+            var heading = document.getElementById(id);
+            if (heading) {
+                headings.push({ el: heading, link: link });
+            }
+        });
+
+        if (headings.length === 0) return;
+
+        var activeLink = null;
+
+        function setActive(link) {
+            if (activeLink === link) return;
+            if (activeLink) activeLink.classList.remove('toc-active');
+            if (link) {
+                link.classList.add('toc-active');
+                
+                var sidebar = document.getElementById('sidebar-toc');
+                if (sidebar) {
+                    var linkRect = link.getBoundingClientRect();
+                    var sidebarRect = sidebar.getBoundingClientRect();
+                    if (linkRect.top < sidebarRect.top + 40 || linkRect.bottom > sidebarRect.bottom - 20) {
+                        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                }
+            }
+            activeLink = link;
+        }
+
+        function onScroll() {
+            var scrollPos = window.scrollY + 100;
+            var current = null;
+
+            for (var i = headings.length - 1; i >= 0; i--) {
+                if (headings[i].el.offsetTop <= scrollPos) {
+                    current = headings[i];
+                    break;
+                }
+            }
+
+            if (current) {
+                setActive(current.link);
+            } else if (headings.length > 0) {
+                setActive(headings[0].link);
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function addCodeLangLabels() {
+        var blocks = document.querySelectorAll('.post-content pre, .md-content .highlight');
+        blocks.forEach(function(block) {
+            if (block.querySelector('.code-lang-label')) return;
+
+            var code = block.querySelector('code');
+            if (!code) return;
+
+            var lang = '';
+            var classes = code.className || '';
+            var match = classes.match(/language-(\w+)/);
+            if (match) {
+                lang = match[1];
+            } else {
+                match = classes.match(/language-(\S+)/);
+                if (match) lang = match[1];
+            }
+
+            if (lang) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = lang;
+                block.style.position = 'relative';
+                block.insertBefore(label, block.firstChild);
+            }
+        });
+    }
+
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initTocSpy();
+            addCodeLangLabels();
+        });
+    } else {
+        initTocSpy();
+        addCodeLangLabels();
+    }
+})();
+</script>
+
+</head>
+<body id="top">
+    <header class="header" id="site-header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SciFiReal (Alt + H)">SciFiReal</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <a class="search-trigger" href="http://localhost:1313/search/" title="搜索" accesskey="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+        </a>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="http://localhost:1313/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags/" title="标签墙">
+                    <span>标签墙</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<div class="article-layout">
+  <div class="article-main">
+    <article class="post-single">
+      <header class="post-header">
+        <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">首页</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+        <h1 class="post-title entry-hint-parent">
+          使用Hugo在Github Pages上搭建个人博客
+        </h1>
+        <div class="post-meta">
+
+<span title='2026-10-02 08:59:47 +0800 CST'>October 2, 2026</span>&nbsp;·&nbsp;<span>2 min</span>&nbsp;·&nbsp;<span>279 words</span>&nbsp;·&nbsp;<span>Hi, I&#39;m SciFiReal</span>
+
+</div>
+        <div class="post-header-tags">
+          <a class="tag-pill" href="http://localhost:1313/tags/hugo/">Hugo</a>
+          <a class="tag-pill" href="http://localhost:1313/tags/github/">Github</a>
+        </div>
+      </header> 
+      <div class="post-content md-content"><h2 id="1了解github静态网站的搭建方式">1.了解Github静态网站的搭建方式<a hidden class="anchor" aria-hidden="true" href="#1了解github静态网站的搭建方式">#</a></h2>
+<h3 id="11-什么是github-pages">1.1 什么是Github Pages<a hidden class="anchor" aria-hidden="true" href="#11-什么是github-pages">#</a></h3>
+<p>Github Page是Github提供的免费网页托管服务。把网页文件放到Github仓库后，就能生成xxx.github.io网址，其他人可以访问，不用自己买服务器。静态网站的优点是打开快、安全、维护简单；缺点是交互能力弱，适合写博客，记笔记。</p>
+<h3 id="12-什么是hugo">1.2 什么是Hugo<a hidden class="anchor" aria-hidden="true" href="#12-什么是hugo">#</a></h3>
+<p>Hugo是一款开源免费的静态网站生成工具，用Go语言所写的，速度很快。简单理解就是你只需要写Markdown笔记文章，Hugo会自动把文章与主题模板，一次性转换成一堆html网页文件。不用写HTML、CSS前端代码，写完直接生成网页，之后上传到Github Pages就能访问。</p>
+<p>其它静态网站构建工具：</p>
+<blockquote>
+<ol>
+<li>Hexo：基于Node.js，国内用户最多，中文教程、博客主题非常丰富。缺点是文章多的时候构建速度较慢。</li>
+<li>VuePress/VitePress：VuePress是基于Vue，VitePress是它的升级版，速度更快。可以在Markdown嵌入Vue组件，适合写技术文档。</li>
+<li>Jekyll：Github Pages原生支持。缺点是Ruby环境安装麻烦，构建慢。</li>
+<li>其它的还有MkDocs，Docusaurus。</li>
+</ol>
+</blockquote>
+<p>如何选择呢合适的工具呢？个人博客，最求简单快速使用Hugo；中文资源多，折腾主题使用Hexo；写技术文档、想页面交互使用VitePress；其它方式不建议使用。</p>
+<hr>
+<h2 id="2-部署个人博客">2. 部署个人博客<a hidden class="anchor" aria-hidden="true" href="#2-部署个人博客">#</a></h2>
+<h3 id="21-安装windows">2.1 安装（Windows）<a hidden class="anchor" aria-hidden="true" href="#21-安装windows">#</a></h3>
+<p>（1）安装Hugo</p>
+<ul>
+<li>
+<p>Windowns的cmd或powershell下用winget一键安装Hugo，缺点是会安装到C盘</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">winget install Hugo.Hugo.Extended
+</span></span></code></pre></div></li>
+<li>
+<p>下载zip压缩包，拿到hugo.exe进行安装，下载位置https://github.com/gohugoio/hugo/releasesHugo.</p>
+</li>
+</ul>
+<blockquote>
+<p>验证是否安装成功：终端输入<code>hugo version</code> 出现<code>hugo v0.1xx.x ... extended</code>一大串即是成功</p>
+</blockquote>
+<p>（2）本地创建站点</p>
+<ul>
+<li>
+<p>在自定义文件目录下创建站点</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">D:<span class="se">\C</span>omputer<span class="se">\b</span>log&gt;hugo new site my-blog
+</span></span></code></pre></div></li>
+<li>
+<p>初始化与安装主题（PaperMod）</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">D:<span class="se">\C</span>omputer<span class="se">\b</span>log<span class="se">\m</span>y-blog&gt;git init  // 初始化
+</span></span><span class="line"><span class="cl">D:<span class="se">\C</span>omputer<span class="se">\b</span>log<span class="se">\m</span>y-blog&gt;git submodule add   // 添加主题https://github.com/adityatelange/hugo-PaperMod.git themes/PaperMod
+</span></span></code></pre></div></li>
+</ul>
+<p>（3）修改配置</p>
+<p>修改根目录hugo.toml</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">baseURL = &#39;https://yourname.github.io/&#39; # 先占位，第二阶段部署时改成真实地址
+</span></span><span class="line"><span class="cl">locale = &#39;zh-cn&#39;
+</span></span><span class="line"><span class="cl">title = &#39;我的博客&#39;
+</span></span><span class="line"><span class="cl">theme = &#39;PaperMod&#39;
+</span></span></code></pre></div><p>（4）写一篇笔记</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">D:<span class="se">\C</span>omputer<span class="se">\b</span>log<span class="se">\m</span>y-blog&gt;hugo new content posts/hello-world.md
+</span></span></code></pre></div><p>hello-world.md默认构造如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">date = &#39;2026-09-16T15:48:44+08:00&#39; 
+</span></span><span class="line"><span class="cl">draft = false  # 注意：draft默认是true是草稿模式，正式文章要改为false
+</span></span><span class="line"><span class="cl">title = &#39;Hello World&#39;
+</span></span><span class="line"><span class="cl">---
+</span></span><span class="line"><span class="cl">内容区
+</span></span></code></pre></div><p>（5）启动预览，浏览器打开</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">D:<span class="se">\C</span>omputer<span class="se">\b</span>log<span class="se">\m</span>y-blog&gt;hugo server -D
+</span></span></code></pre></div><hr>
+<h3 id="22-部署到github-pages">2.2 部署到GitHub Pages<a hidden class="anchor" aria-hidden="true" href="#22-部署到github-pages">#</a></h3>
+<p>整体的流程：本地写文章 → git push 上传代码 → GitHub Actions 自动构建 → 别人访问
+https://你的用户名.github.io</p>
+<p>（1）注册/登录Github</p>
+<p>（2）创建仓库</p>
+<ol>
+<li>Repository name：你的小写用户名.github.io，例如yougli.github.io（仓库名必须是你的用户名，要全部小写）</li>
+<li>选择public（免费仓库托管需要公开仓库）</li>
+<li>其它选项不要勾选</li>
+</ol>
+<p>（3）配置git</p>
+<p>（4）修改baseURL</p>
+<p>修改根目录hugo.toml下的baseURL：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">baseURL =&#39;https://你的用户名.github.io&#39; # https://yougli.github.io
+</span></span></code></pre></div><p>（5）创建自动构建配置</p>
+<p>GitHub上托管静态文件，需要用Hugo进行编译上去，这一步需要GitHub Actions 免费构建工具</p>
+<ol>
+<li>
+<p>创建文件目录和文件</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">D:<span class="se">\C</span>omputer<span class="se">\b</span>log<span class="se">\m</span>y-blog&gt;mkdir .github<span class="se">\w</span>orkflows
+</span></span><span class="line"><span class="cl">D:<span class="se">\C</span>omputer<span class="se">\b</span>log<span class="se">\m</span>y-blog&gt;notepad .github<span class="se">\w</span>orkflows<span class="se">\h</span>ugo.yml
+</span></span></code></pre></div></li>
+<li>
+<p>在hugo.yml添加以下内容</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="cl"><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Deploy Hugo site to GitHub Pages</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">on</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">push</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">branches</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="l">main</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">workflow_dispatch</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">permissions</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">contents</span><span class="p">:</span><span class="w"> </span><span class="l">read</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">pages</span><span class="p">:</span><span class="w"> </span><span class="l">write</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">id-token</span><span class="p">:</span><span class="w"> </span><span class="l">write</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="nt">jobs</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">build</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l">ubuntu-latest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">steps</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Checkout</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l">actions/checkout@v4</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">with</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">submodules</span><span class="p">:</span><span class="w"> </span><span class="l">recursive</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">fetch-depth</span><span class="p">:</span><span class="w"> </span><span class="m">0</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Setup Hugo</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l">peaceiris/actions-hugo@v3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">with</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">hugo-version</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;latest&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">extended</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Build</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">run</span><span class="p">:</span><span class="w"> </span><span class="l">hugo --minify</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Upload artifact</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l">actions/upload-pages-artifact@v3</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">with</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">          </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l">./public</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">  </span><span class="nt">deploy</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">github-pages</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="l">${{ steps.deployment.outputs.page_url }}</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">runs-on</span><span class="p">:</span><span class="w"> </span><span class="l">ubuntu-latest</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">needs</span><span class="p">:</span><span class="w"> </span><span class="l">build</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">    </span><span class="nt">steps</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">      </span>- <span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l">Deploy to GitHub Pages</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">id</span><span class="p">:</span><span class="w"> </span><span class="l">deployment</span><span class="w">
+</span></span></span><span class="line"><span class="cl"><span class="w">        </span><span class="nt">uses</span><span class="p">:</span><span class="w"> </span><span class="l">actions/deploy-pages@v4</span><span class="w">
+</span></span></span></code></pre></div><blockquote>
+<p><code>submodules: recursive</code> 会在构建时自动拉取 PaperMod 主题，这就是第一阶段用 <code>git submodule add</code> 安装主题的原因</p>
+</blockquote>
+</li>
+</ol>
+<p>（6）推送到GitHub</p>
+<p>在D:\Computer\blog\my-blog目录下使用git命令</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">git init
+</span></span><span class="line"><span class="cl">git add .
+</span></span><span class="line"><span class="cl">git commit -m <span class="s2">&#34;first commit&#34;</span>
+</span></span><span class="line"><span class="cl">git branch -M main
+</span></span><span class="line"><span class="cl">git remote add origin https://github.com/你的用户名/你的用户名<span class="o">(</span>小写<span class="o">)</span>.github.io.git
+</span></span><span class="line"><span class="cl">git push -u origin main
+</span></span></code></pre></div><p>第一次执行 <code>git push</code> 时会弹出浏览器窗口要求登录 GitHub 授权</p>
+<p>（7）开启GitHub Pages</p>
+<p>打开个人博客的仓库，点击Settings，左侧栏Pages，在Build and deployment 下，把 Source 选择为 GitHub Actions</p>
+<p>（8）查看结果</p>
+<p>点击顶部Actions标签页，看到一条正在运行的Deploy Hugo site&hellip;任务，变绿色后，浏览器访问</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="cl">https://你的用户名.github.io   # https://yougli.github.io
+</span></span></code></pre></div><p>你的个人博客正式上线了</p>
+<blockquote>
+<p>草稿预览与发布控制</p>
+<p>本地写完.md笔记后，在<code>D:\Computer\blog\my-blog&gt;hugo server -D</code>进行本地预览，<code>Ctrl +C</code>终止预览，预览之后再推送。</p>
+<p>记得正式推送要把<code>draft: true</code>改为<code>draft: false</code></p>
+</blockquote>
+
+
+      </div>
+
+      <footer class="post-footer">
+          <nav class="series-nav">
+            <div class="series-nav-label">
+              <span>Posts 系列</span>
+              <span>2 篇</span>
+            </div>
+            <div class="series-nav-links">
+              <a class="series-nav-prev" href="http://localhost:1313/posts/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                <div>
+                  <span class="series-nav-dir">上一篇</span>
+                  <span class="series-nav-title">大模型学习路线</span>
+                </div>
+              </a>
+            </div>
+          </nav>
+      </footer>
+    </article>
+  </div>
+
+  <aside class="article-sidebar"><div class="sidebar-toc" id="sidebar-toc">
+      <div class="toc-title">目录</div>
+      <nav id="toc-nav">
+        <ul><li class="toc-h2">
+            <a href="#1%e4%ba%86%e8%a7%a3github%e9%9d%99%e6%80%81%e7%bd%91%e7%ab%99%e7%9a%84%e6%90%ad%e5%bb%ba%e6%96%b9%e5%bc%8f" data-heading="1了解github静态网站的搭建方式">1.了解Github静态网站的搭建方式</a>
+          </li><li class="toc-h3">
+            <a href="#11-%e4%bb%80%e4%b9%88%e6%98%afgithub-pages" data-heading="11-什么是github-pages">1.1 什么是Github Pages</a>
+          </li><li class="toc-h3">
+            <a href="#12-%e4%bb%80%e4%b9%88%e6%98%afhugo" data-heading="12-什么是hugo">1.2 什么是Hugo</a>
+          </li><li class="toc-h2">
+            <a href="#2-%e9%83%a8%e7%bd%b2%e4%b8%aa%e4%ba%ba%e5%8d%9a%e5%ae%a2" data-heading="2-部署个人博客">2. 部署个人博客</a>
+          </li><li class="toc-h3">
+            <a href="#21-%e5%ae%89%e8%a3%85windows" data-heading="21-安装windows">2.1 安装（Windows）</a>
+          </li><li class="toc-h3">
+            <a href="#22-%e9%83%a8%e7%bd%b2%e5%88%b0github-pages" data-heading="22-部署到github-pages">2.2 部署到GitHub Pages</a>
+          </li></ul>
+      </nav>
+    </div></aside>
+</div>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">SciFiReal</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

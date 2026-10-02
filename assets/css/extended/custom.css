@@ -260,7 +260,7 @@ a:hover {
 }
 
 .menu a {
-    font-size: 15px;
+    font-size: 17px;
     color: var(--color-muted);
     padding: 6px 14px;
     border-radius: var(--radius-sm);
@@ -833,7 +833,7 @@ a:hover {
 }
 
 .post-content h3 {
-    font-size: 21px;
+    font-size: 23px;
     font-weight: 650;
     color: var(--color-text-bright);
     margin: 40px 0 16px;
@@ -1036,7 +1036,7 @@ a:hover {
 }
 
 .sidebar-toc .toc-title {
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 650;
     color: var(--color-muted);
     text-transform: uppercase;
@@ -1047,7 +1047,7 @@ a:hover {
 }
 
 .sidebar-toc nav {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.6;
 }
 
@@ -1069,7 +1069,7 @@ a:hover {
     border-radius: var(--radius-sm);
     border-left: 2px solid transparent;
     transition: color 0.15s, background 0.15s, border-color 0.15s;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.5;
 }
 
@@ -1089,12 +1089,12 @@ a:hover {
 /* TOC 层级缩进 */
 .sidebar-toc nav ul ul a {
     padding-left: 24px;
-    font-size: 13.5px;
+    font-size: 15px;
 }
 
 .sidebar-toc nav ul ul ul a {
     padding-left: 36px;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 /* 内联 TOC (小屏回退) */
@@ -1863,7 +1863,7 @@ details .inner {
     }
 
     .menu a {
-        font-size: 14px;
+        font-size: 16px;
         padding: 5px 10px;
     }
 
@@ -1876,11 +1876,11 @@ details .inner {
     }
 
     .post-content h2 {
-        font-size: 22px;
+        font-size: 24px;
     }
 
     .post-content h3 {
-        font-size: 19px;
+        font-size: 21px;
     }
 
     .post-entry {
@@ -1948,6 +1948,10 @@ details .inner {
     }
 
     .post-content h2 {
+        font-size: 22px;
+    }
+
+    .post-content h3 {
         font-size: 20px;
     }
 
@@ -1956,7 +1960,7 @@ details .inner {
     }
 
     .menu a {
-        font-size: 13px;
+        font-size: 15px;
         padding: 4px 8px;
     }
 
