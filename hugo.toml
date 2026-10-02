@@ -22,7 +22,7 @@ pygmentsUseClasses = true
     unsafe = true
   [markup.highlight]
     style = "github-dark"
-    lineNos = true
+    lineNos = false
     tabWidth = 4
     noClasses = false
 
