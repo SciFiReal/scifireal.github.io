@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Qt on SciFiReal</title>
+    <link>http://localhost:1313/tags/qt/</link>
+    <description>Recent content in Qt on SciFiReal</description>
+    <generator>Hugo</generator>
+    <language>zh-cn</language>
+    <lastBuildDate>Sun, 04 Oct 2026 23:57:00 +0800</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/qt/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>基础篇01-VS/Qt开发环境配置以及编译运行原理</title>
+      <link>http://localhost:1313/posts/%E5%9F%BA%E7%A1%80%E7%AF%8701-vs-qt%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E4%BB%A5%E5%8F%8A%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86/</link>
+      <pubDate>Sun, 04 Oct 2026 23:57:00 +0800</pubDate>
+      <guid>http://localhost:1313/posts/%E5%9F%BA%E7%A1%80%E7%AF%8701-vs-qt%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE%E4%BB%A5%E5%8F%8A%E7%BC%96%E8%AF%91%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86/</guid>
+      <description>基础篇01-VS/Qt开发环境配置以及编译运行原理</description>
+    </item>
+  </channel>
+</rss>

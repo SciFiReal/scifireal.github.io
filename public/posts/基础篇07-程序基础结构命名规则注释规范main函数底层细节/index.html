@@ -5,11 +5,11 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="noindex, nofollow">
-<title>大模型学习路线 | SciFiReal</title>
-<meta name="keywords" content="大模型, 学习路线">
-<meta name="description" content="大模型应用开发的学习路径：岗位区分、核心能力与工程化实践。">
+<title>基础篇07-程序基础结构：命名规则、注释规范、main函数底层细节 | SciFiReal</title>
+<meta name="keywords" content="C&#43;&#43;">
+<meta name="description" content="基础篇07-程序基础结构：命名规则、注释规范、main函数底层细节">
 <meta name="author" content="Hi, I&#39;m SciFiReal">
-<link rel="canonical" href="http://localhost:1313/posts/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">
+<link rel="canonical" href="http://localhost:1313/posts/%E5%9F%BA%E7%A1%80%E7%AF%8707-%E7%A8%8B%E5%BA%8F%E5%9F%BA%E7%A1%80%E7%BB%93%E6%9E%84%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99%E6%B3%A8%E9%87%8A%E8%A7%84%E8%8C%83main%E5%87%BD%E6%95%B0%E5%BA%95%E5%B1%82%E7%BB%86%E8%8A%82/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.6f9e12a36815bbfceba889465c88a492671bb06e6d53fe7a7cb7fc2ce01651d5.css" integrity="sha256-b54So2gVu/zrqIlGXIikkmcbsG5tU/56fLf8LOAWUdU=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
@@ -18,7 +18,7 @@
 <link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/%E5%A4%A7%E6%A8%A1%E5%9E%8B%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/%E5%9F%BA%E7%A1%80%E7%AF%8707-%E7%A8%8B%E5%BA%8F%E5%9F%BA%E7%A1%80%E7%BB%93%E6%9E%84%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99%E6%B3%A8%E9%87%8A%E8%A7%84%E8%8C%83main%E5%87%BD%E6%95%B0%E5%BA%95%E5%B1%82%E7%BB%86%E8%8A%82/">
 <noscript>
     <style>
         #theme-toggle,
@@ -240,36 +240,102 @@
     </svg>
 </nav>
         <h1 class="post-title entry-hint-parent">
-          大模型学习路线
+          基础篇07-程序基础结构：命名规则、注释规范、main函数底层细节
         </h1>
         <div class="post-meta">
 
-<span title='2026-09-20 13:53:13 +0800 CST'>September 20, 2026</span>&nbsp;·&nbsp;<span>1 min</span>&nbsp;·&nbsp;<span>18 words</span>&nbsp;·&nbsp;<span>Hi, I&#39;m SciFiReal</span>
+<span title='2026-10-05 00:10:28 +0800 CST'>October 5, 2026</span>&nbsp;·&nbsp;<span>1 min</span>&nbsp;·&nbsp;<span>135 words</span>&nbsp;·&nbsp;<span>Hi, I&#39;m SciFiReal</span>
 
 </div>
         <div class="post-header-tags">
-          <a class="tag-pill" href="http://localhost:1313/tags/%E5%A4%A7%E6%A8%A1%E5%9E%8B/">大模型</a>
-          <a class="tag-pill" href="http://localhost:1313/tags/%E5%AD%A6%E4%B9%A0%E8%B7%AF%E7%BA%BF/">学习路线</a>
+          <a class="tag-pill" href="http://localhost:1313/tags/c&#43;&#43;/">C&#43;&#43;</a>
         </div>
       </header> 
-      <div class="post-content md-content"><h1 id="大模型学习路线">大模型学习路线<a hidden class="anchor" aria-hidden="true" href="#大模型学习路线">#</a></h1>
-<p>大模型对于大多数人是非常陌生的概念，我上大学的时候很少有人知道，如果不是特别关注国外的科技新闻，根本久不知道机器学习、深度学习等概念。关注国外的新闻对于我们普通学校来说，很难得一件事情，因为没有老师会在上课去讲一些前言知识，还在教着十年前的基础知识。当大模型出来的时候，国内有大部分计算机老师估计还不知道是什么东西，AI是什么，根本不敢想象科技发展如何之快。我认为计算机是一门实践性很强的学科，大胆点，所有学科都应该去实践中学习，不能停留在课堂，既然都能考上大学，说明学习能力是没问题的。大学应该注重培养自学能力，老师少说，学生多动手。而不是学习技术去看B站和看某鱼的盗版课。如果学生在大学学不到任何技术和有用的知识，我觉得学生都应该去主动思考和学习。</p>
-<p>想学大模型应用开发，首先要搞懂两个概念。一是大模型应用开发、算法岗、开发岗有什么区别？；二是大模型应用开发到底在做什么？</p>
-<h2 id="大模型应用开发算法岗开发岗有什么区别">大模型应用开发、算法岗、开发岗有什么区别？<a hidden class="anchor" aria-hidden="true" href="#大模型应用开发算法岗开发岗有什么区别">#</a></h2>
-<p>开发岗大家都不陌生，传统的开发岗位有C++/Java/Go等等，应用在PC端/移动端/Web/游戏等领域。</p>
-<p>算法岗，也叫算法工程师，工作的任务就是改模型，比如训练、微调、对齐、基准测试等等，对学历、数学能力要求高，一般这个岗位是找博士和一些非常优秀的硕士。对于大多数我们来说，传统开发岗位+LLM能力=大模型应用开发。</p>
-<p>有些人不理解LLM开发学Python，跟Java后端开发没啥关系，但问题是你要的是把大模型能力应用实际业务当中，因此就需要Java的万古流传的后端框架，才能稳得住大模型。因此你学习大模型应用开发主要面向以下几类人学：</p>
-<p>1）搞业务，Java后端开发，学大模型应用</p>
-<p>2）其它领域比如工业领域，游戏领域，C++，JavaScript，C#，C开发，也需要学习大模型应用</p>
-<p>3）单纯学大模型开发做demo，用python后端和vue/react框架来做开发</p>
-<p>大模型应用开发：核心工作就是基于大模型的能力，构建应用系统。RAG、Agent、对话系统等都是主战场。你不需要训练模型，不需要推到公式，你需要的是工程化能力，把大模型的能力稳定地跑在生产环境里。例如：</p>
-<ul>
-<li><strong>RAG系统</strong>：企业知识库问答。用户提问→检索文档、组装Prompt 调用模型 返回答案。你需要设计检索策略、处理幻觉、优化延迟</li>
-<li><strong>Agent系统</strong>：让大模型自主调用工具完成任务，比如工单处理、数据分析。你得设计工具、处理多步推理得稳定性、防止死循环</li>
-<li><strong>对话系统</strong>：智能客服、销售助手。你得处理上下文管理、意图识别、多轮对话</li>
-<li><strong>部署与优化</strong>：vLLM部署、KV Cache优化、推荐成本控制。跑个demo谁都会，上线扛住并发</li>
-</ul>
-
+      <div class="post-content md-content"><h2 id="1-头文件include底层原理与使用规范">1. 头文件<code>#include</code>底层原理与使用规范<a hidden class="anchor" aria-hidden="true" href="#1-头文件include底层原理与使用规范">#</a></h2>
+<p><code>#include</code>的本质是：预处理阶段，将指定的文件的内容复制到当前文件。示例如下：</p>
+<p>function.h 声明：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#pragma once   </span><span class="c1">// 作用是：防止这个头文件被多次include，避免重复定义。本质是编译器识别这个头文件，之后再遇到#include就直接跳过。例如如果你在头文件中实现了函数，被多次#include之后就会出现重复定义的错误
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">add</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">);</span>
+</span></span></code></pre></div><p>function_finhs.cpp 实现：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;function.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">add</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>main.cpp 调用：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;function.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">add</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>  <span class="c1">// 7
+</span></span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p>你发现头文件有两种引入方式：一种是&lt;&hellip;&gt;，另一种是&quot;&hellip;&quot;，比如</p>
+<p>#include <iostream>  与 #include &ldquo;function.h&rdquo;</p>
+<p>&lt;&hellip;&gt;：表示系统标准库头文件，为何不用.h后缀是为了与C语言导入标准库进行区分；优先从编辑器库目录中查找；</p>
+<p>&ldquo;&hellip;&quot;：优先从当前项目目录下查找，再去系统目录查找；一般是自己编写的头文件；</p>
+</blockquote>
+<hr>
+<h2 id="2-main函数深入讲解">2. main函数深入讲解<a hidden class="anchor" aria-hidden="true" href="#2-main函数深入讲解">#</a></h2>
+<p>C++规定一个合法的可执行程序，有且只有一个int main() 入口函数，不存在多个自定义入口。</p>
+<p>有两种标准的写法：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// 写法1：无参标准写法（工业小程序、工具程序首选）
+</span></span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 写法2：带参标准写法（工控上位机、可执行程序、带启动参数项目）
+</span></span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span><span class="o">*</span> <span class="n">argv</span><span class="p">[])</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>如何来理解写法2呢？</p>
+<p><code>argc</code> = argument count 参数个数</p>
+<p><code>argv</code> = argument vector 参数数组（C风格字符串数组）</p>
+<p>在cmd控制台输入</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">test.exe <span class="m">100</span> hello
+</span></span></code></pre></div><p>相当于：argc = 3</p>
+<p>argv[0] = &ldquo;text.exe&rdquo;</p>
+<p>argv[1] = &ldquo;100&rdquo;</p>
+<p>argv[2] = &ldquo;hello&rdquo;</p>
+<p>第二种写法适合需要外部传参，argv[0]永远是程序的名字exe文件名，参数从argv[1]开始。</p>
+<hr>
+<h2 id="3-命名规范">3. 命名规范<a hidden class="anchor" aria-hidden="true" href="#3-命名规范">#</a></h2>
+<p>合法命名：</p>
+<ol>
+<li>
+<p>变量名由<em>字母</em>、<em>数字</em>、<em>下划线</em>组成；</p>
+</li>
+<li>
+<p>数字不能作为变量的首字母；</p>
+</li>
+<li>
+<p>Device和device是两个不同的变量；</p>
+</li>
+<li>
+<p>不能用C++中关键字、保留字作为自定义变量名</p>
+</li>
+</ol>
+<p>规范命名：</p>
+<ol>
+<li>变量名：小驼峰（userScore）或下划线（user_score）命名，语义化、见名知意；还有一种常量或宏定义字母需要全部大写；</li>
+<li>函数名：动作语义，以动词开头，小驼峰 getScore ()，大驼峰 GetScore ()，下划线 get_score ()；</li>
+<li>禁止拼音、单字母无意义命名，禁止中英文混搭</li>
+<li>不同领域的相关变量有统一语义化，例如工业设备：sn，batch，errorCode；</li>
+</ol>
+<hr>
+<h2 id="4-注释规范">4. 注释规范<a hidden class="anchor" aria-hidden="true" href="#4-注释规范">#</a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// 这是单行注释
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">多行注释
+</span></span></span><span class="line"><span class="cl"><span class="cm">适合函数、类、功能说明
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span></code></pre></div>
 
       </div>
 
@@ -280,12 +346,12 @@
               <span>9 篇</span>
             </div>
             <div class="series-nav-links">
-              <a class="series-nav-next" href="http://localhost:1313/posts/use-hugo-github-pages-build-blog/">
+              <a class="series-nav-prev" href="http://localhost:1313/posts/%E5%9F%BA%E7%A1%80%E7%AF%8706-%E4%B8%80%E7%BB%B4%E6%95%B0%E7%BB%84&#43;%E4%BA%8C%E4%BD%8D%E6%95%B0%E7%BB%84/">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
                 <div>
-                  <span class="series-nav-dir">下一篇</span>
-                  <span class="series-nav-title">使用Hugo在Github Pages上搭建个人博客</span>
+                  <span class="series-nav-dir">上一篇</span>
+                  <span class="series-nav-title">基础篇06-一维数组&#43;二位数组</span>
                 </div>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
               </a>
             </div>
           </nav>
@@ -297,7 +363,13 @@
       <div class="toc-title">目录</div>
       <nav id="toc-nav">
         <ul><li class="toc-h2">
-            <a href="#%e5%a4%a7%e6%a8%a1%e5%9e%8b%e5%ba%94%e7%94%a8%e5%bc%80%e5%8f%91%e7%ae%97%e6%b3%95%e5%b2%97%e5%bc%80%e5%8f%91%e5%b2%97%e6%9c%89%e4%bb%80%e4%b9%88%e5%8c%ba%e5%88%ab" data-heading="大模型应用开发算法岗开发岗有什么区别">大模型应用开发、算法岗、开发岗有什么区别？</a>
+            <a href="#1-%e5%a4%b4%e6%96%87%e4%bb%b6include%e5%ba%95%e5%b1%82%e5%8e%9f%e7%90%86%e4%b8%8e%e4%bd%bf%e7%94%a8%e8%a7%84%e8%8c%83" data-heading="1-头文件include底层原理与使用规范">1. 头文件#include底层原理与使用规范</a>
+          </li><li class="toc-h2">
+            <a href="#2-main%e5%87%bd%e6%95%b0%e6%b7%b1%e5%85%a5%e8%ae%b2%e8%a7%a3" data-heading="2-main函数深入讲解">2. main函数深入讲解</a>
+          </li><li class="toc-h2">
+            <a href="#3-%e5%91%bd%e5%90%8d%e8%a7%84%e8%8c%83" data-heading="3-命名规范">3. 命名规范</a>
+          </li><li class="toc-h2">
+            <a href="#4-%e6%b3%a8%e9%87%8a%e8%a7%84%e8%8c%83" data-heading="4-注释规范">4. 注释规范</a>
           </li></ul>
       </nav>
     </div></aside>
