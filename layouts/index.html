@@ -22,14 +22,14 @@
 
   {{- $recent := where site.RegularPages "Date.Year" ">" 2000 }}
   {{- $recent = $recent.ByDate.Reverse }}
-  {{- $recent = first 5 $recent }}
-  {{- if $recent }}
+  {{- $paginator := .Paginate $recent 10 }}
+  {{- if $paginator.Pages }}
   <section class="home-recent">
     <div class="section-label-row">
-      <h2 class="section-label">最近更新</h2>
+      <h2 class="section-label">所有文章</h2>
     </div>
     <div class="recent-list">
-      {{- range $recent }}
+      {{- range $paginator.Pages }}
       <a class="recent-item" href="{{ .Permalink }}">
         <div class="recent-item-main">
           <h3 class="recent-title">{{ .Title }}</h3>
@@ -43,6 +43,23 @@
       </a>
       {{- end }}
     </div>
+    {{- if gt $paginator.TotalPages 1 }}
+    <nav class="pagination">
+      {{- if $paginator.HasPrev }}
+      <a class="pagination-prev" href="{{ $paginator.Prev.URL | absURL }}">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        上一页
+      </a>
+      {{- end }}
+      <span class="pagination-info">{{ $paginator.PageNumber }} / {{ $paginator.TotalPages }}</span>
+      {{- if $paginator.HasNext }}
+      <a class="pagination-next" href="{{ $paginator.Next.URL | absURL }}">
+        下一页
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+      </a>
+      {{- end }}
+    </nav>
+    {{- end }}
   </section>
   {{- end }}
 

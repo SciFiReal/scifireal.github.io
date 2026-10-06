@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>OOP篇07-多态：同一调用、不同行为的面向对象核心 | SciFiReal</title>
+<meta name="keywords" content="C&#43;&#43;">
+<meta name="description" content="OOP篇07-多态：同一调用、不同行为的面向对象核心">
+<meta name="author" content="Hi, I&#39;m SciFiReal">
+<link rel="canonical" href="http://localhost:1313/posts/oop%E7%AF%8707-%E5%A4%9A%E6%80%81%E5%90%8C%E4%B8%80%E8%B0%83%E7%94%A8%E4%B8%8D%E5%90%8C%E8%A1%8C%E4%B8%BA%E7%9A%84%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E6%A0%B8%E5%BF%83/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.1e36c4a1f2d39bc19f6dbcfacb43456c3488ab03bc6ecc0f37e894aa87f2722a.css" integrity="sha256-HjbEofLTm8Gfbbz6y0NFbDSIqwO8bswPN&#43;iUqofycio=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/oop%E7%AF%8707-%E5%A4%9A%E6%80%81%E5%90%8C%E4%B8%80%E8%B0%83%E7%94%A8%E4%B8%8D%E5%90%8C%E8%A1%8C%E4%B8%BA%E7%9A%84%E9%9D%A2%E5%90%91%E5%AF%B9%E8%B1%A1%E6%A0%B8%E5%BF%83/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "light") {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><style>
+     
+    .header { transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease; }
+</style>
+<script>
+(function() {
+    'use strict';
+
+    
+    var header = document.getElementById('site-header');
+    if (header) {
+        var onScroll = function() {
+            if (window.scrollY > 20) {
+                header.classList.add('header--scrolled');
+            } else {
+                header.classList.remove('header--scrolled');
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function initTocSpy() {
+        var tocNav = document.getElementById('toc-nav');
+        if (!tocNav) return;
+
+        var links = tocNav.querySelectorAll('a[data-heading]');
+        if (links.length === 0) return;
+
+        var headings = [];
+        links.forEach(function(link) {
+            var id = link.getAttribute('data-heading');
+            var heading = document.getElementById(id);
+            if (heading) {
+                headings.push({ el: heading, link: link });
+            }
+        });
+
+        if (headings.length === 0) return;
+
+        var activeLink = null;
+
+        function setActive(link) {
+            if (activeLink === link) return;
+            if (activeLink) activeLink.classList.remove('toc-active');
+            if (link) {
+                link.classList.add('toc-active');
+                
+                var sidebar = document.getElementById('sidebar-toc');
+                if (sidebar) {
+                    var linkRect = link.getBoundingClientRect();
+                    var sidebarRect = sidebar.getBoundingClientRect();
+                    if (linkRect.top < sidebarRect.top + 40 || linkRect.bottom > sidebarRect.bottom - 20) {
+                        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                }
+            }
+            activeLink = link;
+        }
+
+        function onScroll() {
+            var scrollPos = window.scrollY + 100;
+            var current = null;
+
+            for (var i = headings.length - 1; i >= 0; i--) {
+                if (headings[i].el.offsetTop <= scrollPos) {
+                    current = headings[i];
+                    break;
+                }
+            }
+
+            if (current) {
+                setActive(current.link);
+            } else if (headings.length > 0) {
+                setActive(headings[0].link);
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function addCodeLangLabels() {
+        var blocks = document.querySelectorAll('.post-content pre, .md-content .highlight');
+        blocks.forEach(function(block) {
+            if (block.querySelector('.code-lang-label')) return;
+
+            var code = block.querySelector('code');
+            if (!code) return;
+
+            var lang = '';
+            var classes = code.className || '';
+            var match = classes.match(/language-(\w+)/);
+            if (match) {
+                lang = match[1];
+            } else {
+                match = classes.match(/language-(\S+)/);
+                if (match) lang = match[1];
+            }
+
+            if (lang) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = lang;
+                block.style.position = 'relative';
+                block.insertBefore(label, block.firstChild);
+            }
+        });
+    }
+
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initTocSpy();
+            addCodeLangLabels();
+        });
+    } else {
+        initTocSpy();
+        addCodeLangLabels();
+    }
+})();
+</script>
+
+</head>
+<body id="top">
+    <header class="header" id="site-header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SciFiReal (Alt + H)">SciFiReal</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <a class="search-trigger" href="http://localhost:1313/search/" title="搜索" accesskey="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+        </a>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="http://localhost:1313/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags/" title="标签墙">
+                    <span>标签墙</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<div class="article-layout">
+  <div class="article-main">
+    <article class="post-single">
+      <header class="post-header">
+        <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">首页</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+        <h1 class="post-title entry-hint-parent">
+          OOP篇07-多态：同一调用、不同行为的面向对象核心
+        </h1>
+        <div class="post-meta">
+
+<span title='2026-10-06 21:58:08 +0800 CST'>October 6, 2026</span>&nbsp;·&nbsp;<span>4 min</span>&nbsp;·&nbsp;<span>677 words</span>&nbsp;·&nbsp;<span>Hi, I&#39;m SciFiReal</span>
+
+</div>
+        <div class="post-header-tags">
+          <a class="tag-pill" href="http://localhost:1313/tags/c&#43;&#43;/">C&#43;&#43;</a>
+        </div>
+      </header> 
+      <div class="post-content md-content"><blockquote>
+<p>什么是多态？</p>
+<p>同一个函数调用语句，传入不同对象，自动执行不同版本的函数代码。</p>
+</blockquote>
+<blockquote>
+<p>为何需要多态？</p>
+<ol>
+<li>代码可以 “一套接口，适配多种子类”，新增子类不用修改原有业务代码</li>
+<li>统一接口，调用逻辑简单</li>
+</ol>
+</blockquote>
+<hr>
+<h2 id="1-多态">1. 多态<a hidden class="anchor" aria-hidden="true" href="#1-多态">#</a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 父类
+</span></span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Person</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">protected</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">string</span> <span class="n">name</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Person</span><span class="p">(</span><span class="n">string</span> <span class="n">n</span><span class="p">)</span><span class="o">:</span><span class="n">name</span><span class="p">(</span><span class="n">n</span><span class="p">){}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// ✅ 虚函数：为多态做准备
+</span></span></span><span class="line"><span class="cl">    <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">work</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;工作&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 学生：继承Person，重写work
+</span></span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Student</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Person</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Student</span><span class="p">(</span><span class="n">string</span> <span class="n">n</span><span class="p">)</span><span class="o">:</span><span class="n">Person</span><span class="p">(</span><span class="n">n</span><span class="p">){}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 重写虚函数
+</span></span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">work</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 在学习&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 老师：继承Person，重写work
+</span></span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Teacher</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Person</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Teacher</span><span class="p">(</span><span class="n">string</span> <span class="n">n</span><span class="p">)</span><span class="o">:</span><span class="n">Person</span><span class="p">(</span><span class="n">n</span><span class="p">){}</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">work</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 在讲课&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 只写这一个通用函数！父类引用，支持所有子类
+</span></span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">doWork</span><span class="p">(</span><span class="n">Person</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">p</span><span class="p">.</span><span class="n">work</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Student</span> <span class="n">s</span><span class="p">(</span><span class="s">&#34;张三&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Teacher</span> <span class="n">t</span><span class="p">(</span><span class="s">&#34;李老师&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">doWork</span><span class="p">(</span><span class="n">s</span><span class="p">);</span> <span class="c1">// 同一个doWork，自动调用Student::work
+</span></span></span><span class="line"><span class="cl">    <span class="n">doWork</span><span class="p">(</span><span class="n">t</span><span class="p">);</span> <span class="c1">// 同一个doWork，自动调用Teacher::work
+</span></span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p>由上面例子可以知道多态生效的4个必要条件</p>
+<ol>
+<li>要有继承，子类继承父类；</li>
+<li>父类要有虚函数<code>virtual</code>；</li>
+<li>子类重写<code>override</code>这个虚函数（函数名，返回值，参数完全一致）</li>
+<li>使用父类指针/父类引用 指向子类对象</li>
+</ol>
+<p>注意：如果不用父类指针/引用，直接<code>Person p = s</code>，会发生对象切片，多态失效</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">Student</span> <span class="nf">s</span><span class="p">(</span><span class="s">&#34;张三&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">Person</span> <span class="n">p</span> <span class="o">=</span> <span class="n">s</span><span class="p">;</span> <span class="c1">// 对象切片！只会拷贝父类部分，子类信息丢掉
+</span></span></span><span class="line"><span class="cl"><span class="n">p</span><span class="p">.</span><span class="n">work</span><span class="p">();</span>     <span class="c1">// 调用父类work，不是Student的work，多态失效
+</span></span></span></code></pre></div><blockquote>
+<p>问题一：为什么可以写<code>Person&amp; p = t</code>;</p>
+</blockquote>
+<p>这是向上转型。允许父类引用 / 父类指针，<strong>引用 / 指向子类对象</strong>，不是把<code>t</code>变成 Person 类型；而是：<strong>通过父类引用 p，只能以 Person 的视角去访问这个 t 对象</strong>。</p>
+<p>对象<code>t</code>真实类型：<code>Teacher</code>（永远不会变）；</p>
+<p>引用<code>p</code>的静态类型：<code>Person</code>（编译器看这个类型）</p>
+<p>静态类型：编译时就知道的类型（p 是 Person&amp;）；</p>
+<p>动态类型：运行时对象真实类型（t 是 Teacher）；</p>
+<p>虚函数多态，就是靠<strong>静态类型和动态类型不一致</strong>实现的。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">Teacher</span> <span class="nf">t</span><span class="p">(</span><span class="s">&#34;李老师&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">Person</span><span class="o">&amp;</span> <span class="n">p</span> <span class="o">=</span> <span class="n">t</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">p</span><span class="p">.</span><span class="n">work</span><span class="p">();</span> <span class="c1">// 虚函数，运行时看真实对象是Teacher，调用Teacher::work
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">p</span><span class="p">.</span><span class="n">workId</span><span class="p">;</span> <span class="c1">// ❌ 编译报错！p是Person引用，编译器不知道有workId
+</span></span></span></code></pre></div><p>编译时是Person引用，运行时是Teacher。</p>
+<hr>
+<h2 id="2-虚析构函数">2. 虚析构函数<a hidden class="anchor" aria-hidden="true" href="#2-虚析构函数">#</a></h2>
+<blockquote>
+<p>场景：<code>new</code> 创建子类对象，返回父类指针；最后 <code>delete</code> 父类指针。</p>
+</blockquote>
+<p>情况 1：父类析构没有 virtual（错误写法！会内存泄漏）</p>
+<pre tabindex="0"><code>#include &lt;iostream&gt;
+#include &lt;string&gt;
+using namespace std;
+
+class Person {
+protected:
+    string name;
+public:
+    Person(string n):name(n){
+        cout &lt;&lt; &#34;Person构造\n&#34;;
+    }
+    virtual void work() {
+        cout &lt;&lt; name &lt;&lt; &#34;工作\n&#34;;
+    }
+    // ❗父类析构没有 virtual
+    ~Person() {
+        cout &lt;&lt; &#34;Person析构\n&#34;;
+    }
+};
+
+class Student : public Person {
+private:
+    char* buf; // 子类自己在堆上开辟内存
+public:
+    Student(string n, const char* str):Person(n){
+        buf = new char[strlen(str)+1];
+        strcpy(buf, str);
+        cout &lt;&lt; &#34;Student构造\n&#34;;
+    }
+    void work() override {
+        cout &lt;&lt; name &lt;&lt; &#34;在学习：&#34; &lt;&lt; buf &lt;&lt; &#34;\n&#34;;
+    }
+    ~Student() {
+        delete[] buf; // 释放子类堆内存！
+        cout &lt;&lt; &#34;Student析构\n&#34;;
+    }
+};
+
+int main() {
+    // 父类指针接收new出来的子类对象
+    Person* p = new Student(&#34;张三&#34;, &#34;2026001&#34;);
+    p-&gt;work();
+    delete p; // ❗重点：父类析构不是virtual
+    return 0;
+}
+</code></pre><p>输出结果：</p>
+<pre tabindex="0"><code>Person构造
+Student构造
+张三在学习：2026001
+Person析构
+</code></pre><blockquote>
+<p>只调用了父类析构！Student 析构函数完全没跑！</p>
+<p>子类里面 <code>buf</code> 是<code>new</code>出来的堆内存，<code>~Student()</code>没有执行 → <code>delete[] buf</code>不会执行 → <strong>内存泄漏！</strong></p>
+<p>原因：析构函数此时是<strong>静态绑定</strong>。编译器看指针的静态类型 <code>Person*</code>，直接调用<code>Person::~Person()</code>。不看真实对象类型。</p>
+</blockquote>
+<p>情况 2：父类析构加上 virtual（正确写法）</p>
+<pre tabindex="0"><code>只改动一行：virtual ~Person()
+</code></pre><pre tabindex="0"><code>Person构造
+Student构造
+张三在学习：2026001
+Student析构
+Person析构
+</code></pre><blockquote>
+<p>先子类析构，再父类析构。子类析构执行，<code>delete[] buf</code> 释放子类堆内存，没有内存泄漏。</p>
+<p>原理：析构函数变成虚函数，触发动态绑定。<code>delete p</code> 的时候，<strong>看对象真实类型是 Student，先调用 Student 析构，之后自动调用父类析构</strong>。</p>
+</blockquote>
+<blockquote>
+<p>==经验，如果一个类被设计成通用类，则写虚析构函数，后续可能会有虚函数而已==</p>
+</blockquote>
+<hr>
+<h2 id="3-虚函数的原理">3. 虚函数的原理<a hidden class="anchor" aria-hidden="true" href="#3-虚函数的原理">#</a></h2>
+<p>父类有虚函数，类内部会藏一个虚函数指针vptr，指向一张虚函数表。虚表里面存放当前对象类型对应的函数地址。运行时通过vptr查表，找到真实类型对应的函数，完成动态绑定。</p>
+<p>虚表（vtable）里面存的是：本类所有虚函数的地址，包含虚析构函数的地址。</p>
+<ol>
+<li>先把两个对象内存画出来</li>
+</ol>
+<pre tabindex="0"><code>Person对象内存：
+┌──────────┬────────┐
+│  vptr    │ name   │
+└──────────┴────────┘
+ ↑虚函数指针，指向 Person虚表(Person vtable)
+
+Person虚表：存放Person虚函数地址
+[ &amp;Person::work , &amp;Person::~Person ]
+</code></pre><p>子类 Student : public Person（重写 work）</p>
+<p>子类继承父类的 vptr，<strong>子类自己会生成一张全新虚表</strong></p>
+<pre tabindex="0"><code>Student对象内存：
+┌──────────┬────────┬────────┐
+│  vptr    │ name   │ id     │
+└──────────┴────────┴────────┘
+ ↑这个vptr指向 Student虚表(Student vtable)
+
+Student虚表：
+[ &amp;Student::work , &amp;Student::~Person ]
+</code></pre><blockquote>
+<p>重点：<strong>每个类（Person、Student）各有一张虚表，不是每个对象一张表！</strong> 但是<strong>每个对象都自带一个 vptr（虚指针），存自己所属类虚表的地址。</strong></p>
+</blockquote>
+<ol start="2">
+<li><code>Person* p = new Student;</code> 内存情况</li>
+</ol>
+<pre tabindex="0"><code>Person* p -----&gt; 【Student对象内存】
+                 ┌──────────┬────────┬────────┐
+                 │  vptr    │ name   │ id     │
+                 └──────────┴────────┴────────┘
+                     ↓
+                Student虚表
+                [ &amp;Student::work , ... ]
+</code></pre><ul>
+<li>指针<code>p</code>的<strong>静态类型是 Person</strong>*，编译器编译阶段只认 Person 成员。</li>
+<li>但是<code>p</code>指向的那块内存，<strong>真实对象是 Student，对象里面自带的 vptr 指向 Student 虚表</strong>。</li>
+</ul>
+<ol start="3">
+<li>
+<p><code>p-&gt;work();</code> 运行时发生了什么（动态绑定）</p>
+<ol>
+<li>拿到<code>p</code>指向对象内存里的<strong>vptr</strong>；</li>
+<li>通过 vptr 找到<strong>这个对象真实类型对应的虚表</strong>；</li>
+<li>在虚表里取出<code>work</code>函数地址；</li>
+<li>调用这个地址的函数。</li>
+</ol>
+</li>
+<li>
+<p>如果对象是 Person 呢</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">Person</span><span class="o">*</span> <span class="n">p2</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Person</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// p2指向Person对象内存，里面vptr指向Person虚表。
+</span></span></span><span class="line"><span class="cl"><span class="n">p2</span><span class="o">-&gt;</span><span class="n">work</span><span class="p">();</span>  <span class="c1">//查表拿到Person::work。
+</span></span></span></code></pre></div></li>
+<li>
+<p>如果没有 virtual（普通函数，静态绑定）</p>
+<p><code>p-&gt;work()</code>，编译期直接看指针静态类型<code>Person*</code>，直接写死调用<code>Person::work</code>地址。<strong>不去查表，完全不看对象真实类型</strong>。</p>
+</li>
+</ol>
+<hr>
+<blockquote>
+<p>为什么需要虚表呢？</p>
+</blockquote>
+<p>虚表是专门为==运行时动态选择函数==才造出来的。</p>
+<p>编译器处理<code>p-&gt;work()</code></p>
+<ol>
+<li>
+<p>编译期检查：Person 有虚函数 work，语法合法；</p>
+</li>
+<li>
+<p><strong>但是编译器不知道运行时 p 到底指向 Person 还是 Student</strong>，所以不能写死函数地址；</p>
+</li>
+<li>
+<p>编译器生成的指令变成：</p>
+<blockquote>
+<p>① 从 p 指向对象内存取出 vptr</p>
+<p>② 通过 vptr 找到虚表</p>
+<p>③ 在虚表取出 work 函数地址</p>
+<p>④ 调用这个地址</p>
+</blockquote>
+</li>
+</ol>
+<p>虚表的作用：运行时根据对象真实类型，拿到正确的虚函数地址。没有动态选择的需求，完全不需要虚表！不管有没有虚函数，<code>p</code>（<code>Person* p = &amp;s</code>）<strong>永远指向子类对象 s 的起始地址</strong>，指向的对象本身不会变。 **变的不是 p 指向谁，而是调用函数的绑定方式。*<em>编译期看p的静态类型Person</em>，直接绑定 Person::work。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Person</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="n">work</span><span class="p">()</span> <span class="p">{</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Person work&#34;</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Student</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Person</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="n">work</span><span class="p">()</span> <span class="p">{</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Student work&#34;</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="n">Student</span> <span class="n">s</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">Person</span><span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">s</span><span class="p">;</span> <span class="c1">// p仍然指向s（Student对象），对象本身是完整Student，没有变！
+</span></span></span><span class="line"><span class="cl"><span class="n">p</span><span class="o">-&gt;</span><span class="n">work</span><span class="p">();</span>      <span class="c1">// 编译期看p的静态类型Person*，直接绑定 Person::work
+</span></span></span></code></pre></div><ol>
+<li><strong>有没有虚表，不改变指针指向哪个对象</strong>；指针永远指向<code>s</code>这个 Student 对象。</li>
+<li><strong>有没有虚表，决定调用函数的方式：</strong>
+<ul>
+<li>无虚表（普通函数）：编译期看指针静态类型，直接写死父类函数地址（静态绑定）。</li>
+<li>有虚表（虚函数）：运行时读取对象 vptr 查表，按<strong>对象真实类型</strong>选函数（动态绑定）。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="4-纯虚函数与抽象类">4. 纯虚函数与抽象类<a hidden class="anchor" aria-hidden="true" href="#4-纯虚函数与抽象类">#</a></h2>
+<p>纯虚函数，就是没有实现的虚函数，虚表里面这个位置填 0。包含纯虚函数的类，叫抽象类，不能实例化（不能直接创建对象）。</p>
+<ol>
+<li>纯虚函数</li>
+</ol>
+<pre tabindex="0"><code>virtual void work() = 0; // 纯虚函数，=0 是标记  
+</code></pre><p>纯虚说明<strong>这个函数在父类没有实现</strong>，虚表中该项置空（0），支持多态</p>
+<ol start="2">
+<li>
+<p>抽象类规则</p>
+<p>只要类里面<strong>至少有一个纯虚函数</strong>，这个类就是抽象类。</p>
+<ul>
+<li>
+<p><strong>不能直接创建对象</strong>（<code>Person p;</code> 编译报错）</p>
+</li>
+<li>
+<p>可以定义抽象类指针、引用（用来做多态）</p>
+</li>
+<li>
+<p>子类<strong>必须重写全部纯虚函数</strong>；如果子类不重写，子类也变成抽象类，同样不能实例化</p>
+</li>
+</ul>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 抽象类：包含纯虚函数 work
+</span></span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Person</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">protected</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">string</span> <span class="n">name</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Person</span><span class="p">(</span><span class="n">string</span> <span class="n">n</span><span class="p">)</span><span class="o">:</span><span class="n">name</span><span class="p">(</span><span class="n">n</span><span class="p">){}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// ✅纯虚函数，没有实现
+</span></span></span><span class="line"><span class="cl">    <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">work</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 抽象类建议虚析构！父类指针delete子类要用
+</span></span></span><span class="line"><span class="cl">    <span class="k">virtual</span> <span class="o">~</span><span class="n">Person</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;Person析构</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// Student子类：重写纯虚函数，不再是抽象类，可以实例化
+</span></span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Student</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Person</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Student</span><span class="p">(</span><span class="n">string</span> <span class="n">n</span><span class="p">)</span><span class="o">:</span><span class="n">Person</span><span class="p">(</span><span class="n">n</span><span class="p">){}</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">work</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 在学习</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// Teacher子类：重写纯虚函数
+</span></span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Teacher</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Person</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Teacher</span><span class="p">(</span><span class="n">string</span> <span class="n">n</span><span class="p">)</span><span class="o">:</span><span class="n">Person</span><span class="p">(</span><span class="n">n</span><span class="p">){}</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">work</span><span class="p">()</span> <span class="k">override</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 在讲课</span><span class="se">\n</span><span class="s">&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 多态函数，接收抽象类引用
+</span></span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">doWork</span><span class="p">(</span><span class="n">Person</span><span class="o">&amp;</span> <span class="n">p</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">p</span><span class="p">.</span><span class="n">work</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// Person p(&#34;张三&#34;); // ❌编译报错！抽象类不能创建对象
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Student</span> <span class="n">s</span><span class="p">(</span><span class="s">&#34;张三&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Teacher</span> <span class="n">t</span><span class="p">(</span><span class="s">&#34;李老师&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">doWork</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">doWork</span><span class="p">(</span><span class="n">t</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Person</span><span class="o">*</span> <span class="n">p1</span> <span class="o">=</span> <span class="k">new</span> <span class="n">Student</span><span class="p">(</span><span class="s">&#34;小明&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">p1</span><span class="o">-&gt;</span><span class="n">work</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">delete</span> <span class="n">p1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出：</p>
+<pre tabindex="0"><code>张三 在学习
+李老师 在讲课
+小明 在学习
+Person析构
+</code></pre>
+
+      </div>
+
+      <footer class="post-footer">
+          <nav class="series-nav">
+            <div class="series-nav-label">
+              <span>Posts 系列</span>
+              <span>24 篇</span>
+            </div>
+            <div class="series-nav-links">
+              <a class="series-nav-prev" href="http://localhost:1313/posts/oop%E7%AF%8706-%E7%BB%A7%E6%89%BF%E4%BB%8E%E9%80%9A%E7%94%A8%E5%88%B0%E7%89%B9%E6%AE%8A%E7%9A%84%E4%BB%A3%E7%A0%81%E5%A4%8D%E7%94%A8%E6%9C%BA%E5%88%B6/">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                <div>
+                  <span class="series-nav-dir">上一篇</span>
+                  <span class="series-nav-title">OOP篇06-继承：从通用到特殊的代码复用机制</span>
+                </div>
+              </a>
+            </div>
+          </nav>
+      </footer>
+    </article>
+  </div>
+
+  <aside class="article-sidebar"><div class="sidebar-toc" id="sidebar-toc">
+      <div class="toc-title">目录</div>
+      <nav id="toc-nav">
+        <ul><li class="toc-h2">
+            <a href="#1-%e5%a4%9a%e6%80%81" data-heading="1-多态">1. 多态</a>
+          </li><li class="toc-h2">
+            <a href="#2-%e8%99%9a%e6%9e%90%e6%9e%84%e5%87%bd%e6%95%b0" data-heading="2-虚析构函数">2. 虚析构函数</a>
+          </li><li class="toc-h2">
+            <a href="#3-%e8%99%9a%e5%87%bd%e6%95%b0%e7%9a%84%e5%8e%9f%e7%90%86" data-heading="3-虚函数的原理">3. 虚函数的原理</a>
+          </li><li class="toc-h2">
+            <a href="#4-%e7%ba%af%e8%99%9a%e5%87%bd%e6%95%b0%e4%b8%8e%e6%8a%bd%e8%b1%a1%e7%b1%bb" data-heading="4-纯虚函数与抽象类">4. 纯虚函数与抽象类</a>
+          </li></ul>
+      </nav>
+    </div></aside>
+</div>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">SciFiReal</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

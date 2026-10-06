@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>OOP篇04-友元函数与友元类：特殊访问通道与封装边界 | SciFiReal</title>
+<meta name="keywords" content="C&#43;&#43;">
+<meta name="description" content="OOP篇04-友元函数与友元类：特殊访问通道与封装边界">
+<meta name="author" content="Hi, I&#39;m SciFiReal">
+<link rel="canonical" href="http://localhost:1313/posts/oop%E7%AF%8704-%E5%8F%8B%E5%85%83%E5%87%BD%E6%95%B0%E4%B8%8E%E5%8F%8B%E5%85%83%E7%B1%BB%E7%89%B9%E6%AE%8A%E8%AE%BF%E9%97%AE%E9%80%9A%E9%81%93%E4%B8%8E%E5%B0%81%E8%A3%85%E8%BE%B9%E7%95%8C/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.1e36c4a1f2d39bc19f6dbcfacb43456c3488ab03bc6ecc0f37e894aa87f2722a.css" integrity="sha256-HjbEofLTm8Gfbbz6y0NFbDSIqwO8bswPN&#43;iUqofycio=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/oop%E7%AF%8704-%E5%8F%8B%E5%85%83%E5%87%BD%E6%95%B0%E4%B8%8E%E5%8F%8B%E5%85%83%E7%B1%BB%E7%89%B9%E6%AE%8A%E8%AE%BF%E9%97%AE%E9%80%9A%E9%81%93%E4%B8%8E%E5%B0%81%E8%A3%85%E8%BE%B9%E7%95%8C/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "light") {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><style>
+     
+    .header { transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease; }
+</style>
+<script>
+(function() {
+    'use strict';
+
+    
+    var header = document.getElementById('site-header');
+    if (header) {
+        var onScroll = function() {
+            if (window.scrollY > 20) {
+                header.classList.add('header--scrolled');
+            } else {
+                header.classList.remove('header--scrolled');
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function initTocSpy() {
+        var tocNav = document.getElementById('toc-nav');
+        if (!tocNav) return;
+
+        var links = tocNav.querySelectorAll('a[data-heading]');
+        if (links.length === 0) return;
+
+        var headings = [];
+        links.forEach(function(link) {
+            var id = link.getAttribute('data-heading');
+            var heading = document.getElementById(id);
+            if (heading) {
+                headings.push({ el: heading, link: link });
+            }
+        });
+
+        if (headings.length === 0) return;
+
+        var activeLink = null;
+
+        function setActive(link) {
+            if (activeLink === link) return;
+            if (activeLink) activeLink.classList.remove('toc-active');
+            if (link) {
+                link.classList.add('toc-active');
+                
+                var sidebar = document.getElementById('sidebar-toc');
+                if (sidebar) {
+                    var linkRect = link.getBoundingClientRect();
+                    var sidebarRect = sidebar.getBoundingClientRect();
+                    if (linkRect.top < sidebarRect.top + 40 || linkRect.bottom > sidebarRect.bottom - 20) {
+                        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                }
+            }
+            activeLink = link;
+        }
+
+        function onScroll() {
+            var scrollPos = window.scrollY + 100;
+            var current = null;
+
+            for (var i = headings.length - 1; i >= 0; i--) {
+                if (headings[i].el.offsetTop <= scrollPos) {
+                    current = headings[i];
+                    break;
+                }
+            }
+
+            if (current) {
+                setActive(current.link);
+            } else if (headings.length > 0) {
+                setActive(headings[0].link);
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function addCodeLangLabels() {
+        var blocks = document.querySelectorAll('.post-content pre, .md-content .highlight');
+        blocks.forEach(function(block) {
+            if (block.querySelector('.code-lang-label')) return;
+
+            var code = block.querySelector('code');
+            if (!code) return;
+
+            var lang = '';
+            var classes = code.className || '';
+            var match = classes.match(/language-(\w+)/);
+            if (match) {
+                lang = match[1];
+            } else {
+                match = classes.match(/language-(\S+)/);
+                if (match) lang = match[1];
+            }
+
+            if (lang) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = lang;
+                block.style.position = 'relative';
+                block.insertBefore(label, block.firstChild);
+            }
+        });
+    }
+
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initTocSpy();
+            addCodeLangLabels();
+        });
+    } else {
+        initTocSpy();
+        addCodeLangLabels();
+    }
+})();
+</script>
+
+</head>
+<body id="top">
+    <header class="header" id="site-header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SciFiReal (Alt + H)">SciFiReal</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <a class="search-trigger" href="http://localhost:1313/search/" title="搜索" accesskey="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+        </a>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="http://localhost:1313/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags/" title="标签墙">
+                    <span>标签墙</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<div class="article-layout">
+  <div class="article-main">
+    <article class="post-single">
+      <header class="post-header">
+        <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">首页</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+        <h1 class="post-title entry-hint-parent">
+          OOP篇04-友元函数与友元类：特殊访问通道与封装边界
+        </h1>
+        <div class="post-meta">
+
+<span title='2026-10-06 17:50:07 +0800 CST'>October 6, 2026</span>&nbsp;·&nbsp;<span>1 min</span>&nbsp;·&nbsp;<span>167 words</span>&nbsp;·&nbsp;<span>Hi, I&#39;m SciFiReal</span>
+
+</div>
+        <div class="post-header-tags">
+          <a class="tag-pill" href="http://localhost:1313/tags/c&#43;&#43;/">C&#43;&#43;</a>
+        </div>
+      </header> 
+      <div class="post-content md-content"><blockquote>
+<p>为什么需要友元函数和友元类呢？</p>
+</blockquote>
+<p><code>C++</code>类中<code>private</code>只有本类内部能访问，这是类的封装，保护数据。但如果遇到有一个外部函数，逻辑上与这个类高度绑定，频繁要操作它的私有成员。如果不用友元，只能写一堆<code>get/set</code>接口。为了维护代码的简洁性，用友元来给特定外部代码放行，不用每次都走公开接口。</p>
+<blockquote>
+<p>一句话总结：类的封装默认是对外隐藏私有成员；友元是给定函数/类，让它直接读/写这个类的<code>private/protected</code>成员，但友元不属于这个类。</p>
+</blockquote>
+<blockquote>
+<p>友元有三种形式：友元函数，友元成员函数，友元类</p>
+</blockquote>
+<hr>
+<h2 id="1-友元函数">1. 友元函数<a hidden class="anchor" aria-hidden="true" href="#1-友元函数">#</a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Box</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Box</span><span class="p">(</span><span class="kt">int</span> <span class="n">w</span><span class="p">)</span><span class="o">:</span><span class="n">width</span><span class="p">(</span><span class="n">w</span><span class="p">){}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 声明友元函数，不是成员函数！
+</span></span></span><span class="line"><span class="cl">    <span class="k">friend</span> <span class="kt">void</span> <span class="nf">printWidth</span><span class="p">(</span><span class="n">Box</span> <span class="n">b</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">	
+</span></span><span class="line"><span class="cl"><span class="c1">// 友元函数，不属于Box类，没有this指针
+</span></span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">printWidth</span><span class="p">(</span><span class="n">Box</span> <span class="n">b</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">b</span><span class="p">.</span><span class="n">width</span><span class="p">;</span> <span class="c1">// 可以直接访问 private！
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p>可以看出：声明友元函数<code>friend</code>是在类内部，实现在类外面；</p>
+<p>注意几点：一是友元函数不是成员函数没有<code>this</code>；二是友元不继承、不传递；三是权限单向：<code>printWidth</code> 能访问Box的私有；Box不能自动访问 <code>printWidth</code> 的东西。</p>
+</blockquote>
+<blockquote>
+<p>什么场景下使用友元函数呢？</p>
+</blockquote>
+<p>运算符重载，下一章会讲到。</p>
+<hr>
+<h2 id="2-友元类">2. 友元类<a hidden class="anchor" aria-hidden="true" href="#2-友元类">#</a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">A</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">secret</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">friend</span> <span class="k">class</span> <span class="nc">B</span><span class="p">;</span> <span class="c1">// B是A的友元类
+</span></span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">B</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="n">show</span><span class="p">(</span><span class="n">A</span> <span class="n">a</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="p">.</span><span class="n">secret</span><span class="p">;</span> <span class="c1">// B可以直接访问A私有成员
+</span></span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div><blockquote>
+<p>A类定义<code>firend class B</code>，B 类的所有成员函数，都可以访问 A 类的 private/protected。</p>
+</blockquote>
+<blockquote>
+<p>需要注意以下几点：</p>
+</blockquote>
+<ul>
+<li>A类的友元是B，A类不能访问B类的私有成员；A把B当朋友，B不把A当朋友</li>
+<li>不传递，A类的友元是B，B的友元是C，C不是A的友元；朋友的朋友不是朋友</li>
+<li>不继承，A类的友元是B，A类的子类不会自动拥有友元B类</li>
+</ul>
+<blockquote>
+<p>什么场景下使用友元类？</p>
+</blockquote>
+<p>B类中有很多方法需要使用到A类的私有/保护成员</p>
+<hr>
+<h2 id="3-友元成员函数">3. 友元成员函数<a hidden class="anchor" aria-hidden="true" href="#3-友元成员函数">#</a></h2>
+<p>有类A，类B；让类B中的某一个成员函数，可以访问A的private成员；类B中其它成员函数没有这个权限。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 1. 【前向声明】告诉编译器有个类B
+</span></span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">B</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 2. 定义B类
+</span></span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">B</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="n">showA</span><span class="p">();</span> <span class="c1">// 只是声明，不实现
+</span></span></span><span class="line"><span class="cl">  	<span class="kt">void</span> <span class="nf">test</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">A</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">data</span> <span class="o">=</span> <span class="mi">999</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// ✅ 3. 友元成员函数：授权 B 的 showA() 访问A私有成员
+</span></span></span><span class="line"><span class="cl">    <span class="k">friend</span> <span class="kt">void</span> <span class="n">B</span><span class="o">::</span><span class="n">showA</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 4. 现在A已经定义完毕，可以实现B::showA
+</span></span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">B</span><span class="o">::</span><span class="n">showA</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">A</span> <span class="n">a</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">a</span><span class="p">.</span><span class="n">data</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span> <span class="c1">// 有权访问A的private
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">B</span><span class="o">::</span><span class="n">test</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">A</span> <span class="n">a</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// cout &lt;&lt; a.data; // ❌ 编译报错！test没有被声明为A的友元
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">B</span> <span class="n">b</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">b</span><span class="p">.</span><span class="n">showA</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p>友元成员函数的优点是，只把私有成员真正给到真正需要访问的一个成员函数；封装破环小，权限最小原则；缺点是代码繁琐，需要先声明。</p>
+</blockquote>
+
+
+      </div>
+
+      <footer class="post-footer">
+          <nav class="series-nav">
+            <div class="series-nav-label">
+              <span>Posts 系列</span>
+              <span>24 篇</span>
+            </div>
+            <div class="series-nav-links">
+              <a class="series-nav-prev" href="http://localhost:1313/posts/oop%E7%AF%8703-%E7%B1%BB%E8%BF%9B%E9%98%B6const%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0this%E6%8C%87%E9%92%88%E4%B8%8E%E9%9D%99%E6%80%81%E6%88%90%E5%91%98/">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                <div>
+                  <span class="series-nav-dir">上一篇</span>
+                  <span class="series-nav-title">OOP篇03-类进阶：const成员函数、this指针与静态成员</span>
+                </div>
+              </a>
+              <a class="series-nav-next" href="http://localhost:1313/posts/oop%E7%AF%8705-%E8%BF%90%E7%AE%97%E7%AC%A6%E9%87%8D%E8%BD%BD%E8%AE%A9%E8%87%AA%E5%AE%9A%E4%B9%89%E7%B1%BB%E5%83%8F%E5%86%85%E7%BD%AE%E7%B1%BB%E5%9E%8B%E4%B8%80%E6%A0%B7%E4%BD%BF%E7%94%A8/">
+                <div>
+                  <span class="series-nav-dir">下一篇</span>
+                  <span class="series-nav-title">OOP篇05-运算符重载：让自定义类像内置类型一样使用</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </a>
+            </div>
+          </nav>
+      </footer>
+    </article>
+  </div>
+
+  <aside class="article-sidebar"><div class="sidebar-toc" id="sidebar-toc">
+      <div class="toc-title">目录</div>
+      <nav id="toc-nav">
+        <ul><li class="toc-h2">
+            <a href="#1-%e5%8f%8b%e5%85%83%e5%87%bd%e6%95%b0" data-heading="1-友元函数">1. 友元函数</a>
+          </li><li class="toc-h2">
+            <a href="#2-%e5%8f%8b%e5%85%83%e7%b1%bb" data-heading="2-友元类">2. 友元类</a>
+          </li><li class="toc-h2">
+            <a href="#3-%e5%8f%8b%e5%85%83%e6%88%90%e5%91%98%e5%87%bd%e6%95%b0" data-heading="3-友元成员函数">3. 友元成员函数</a>
+          </li></ul>
+      </nav>
+    </div></aside>
+</div>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">SciFiReal</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

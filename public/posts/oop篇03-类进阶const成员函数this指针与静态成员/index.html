@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>OOP篇03-类进阶：const成员函数、this指针与静态成员 | SciFiReal</title>
+<meta name="keywords" content="C&#43;&#43;">
+<meta name="description" content="OOP篇03-类进阶：const成员函数、this指针与静态成员">
+<meta name="author" content="Hi, I&#39;m SciFiReal">
+<link rel="canonical" href="http://localhost:1313/posts/oop%E7%AF%8703-%E7%B1%BB%E8%BF%9B%E9%98%B6const%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0this%E6%8C%87%E9%92%88%E4%B8%8E%E9%9D%99%E6%80%81%E6%88%90%E5%91%98/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.1e36c4a1f2d39bc19f6dbcfacb43456c3488ab03bc6ecc0f37e894aa87f2722a.css" integrity="sha256-HjbEofLTm8Gfbbz6y0NFbDSIqwO8bswPN&#43;iUqofycio=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/oop%E7%AF%8703-%E7%B1%BB%E8%BF%9B%E9%98%B6const%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0this%E6%8C%87%E9%92%88%E4%B8%8E%E9%9D%99%E6%80%81%E6%88%90%E5%91%98/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "light") {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><style>
+     
+    .header { transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease; }
+</style>
+<script>
+(function() {
+    'use strict';
+
+    
+    var header = document.getElementById('site-header');
+    if (header) {
+        var onScroll = function() {
+            if (window.scrollY > 20) {
+                header.classList.add('header--scrolled');
+            } else {
+                header.classList.remove('header--scrolled');
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function initTocSpy() {
+        var tocNav = document.getElementById('toc-nav');
+        if (!tocNav) return;
+
+        var links = tocNav.querySelectorAll('a[data-heading]');
+        if (links.length === 0) return;
+
+        var headings = [];
+        links.forEach(function(link) {
+            var id = link.getAttribute('data-heading');
+            var heading = document.getElementById(id);
+            if (heading) {
+                headings.push({ el: heading, link: link });
+            }
+        });
+
+        if (headings.length === 0) return;
+
+        var activeLink = null;
+
+        function setActive(link) {
+            if (activeLink === link) return;
+            if (activeLink) activeLink.classList.remove('toc-active');
+            if (link) {
+                link.classList.add('toc-active');
+                
+                var sidebar = document.getElementById('sidebar-toc');
+                if (sidebar) {
+                    var linkRect = link.getBoundingClientRect();
+                    var sidebarRect = sidebar.getBoundingClientRect();
+                    if (linkRect.top < sidebarRect.top + 40 || linkRect.bottom > sidebarRect.bottom - 20) {
+                        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                }
+            }
+            activeLink = link;
+        }
+
+        function onScroll() {
+            var scrollPos = window.scrollY + 100;
+            var current = null;
+
+            for (var i = headings.length - 1; i >= 0; i--) {
+                if (headings[i].el.offsetTop <= scrollPos) {
+                    current = headings[i];
+                    break;
+                }
+            }
+
+            if (current) {
+                setActive(current.link);
+            } else if (headings.length > 0) {
+                setActive(headings[0].link);
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function addCodeLangLabels() {
+        var blocks = document.querySelectorAll('.post-content pre, .md-content .highlight');
+        blocks.forEach(function(block) {
+            if (block.querySelector('.code-lang-label')) return;
+
+            var code = block.querySelector('code');
+            if (!code) return;
+
+            var lang = '';
+            var classes = code.className || '';
+            var match = classes.match(/language-(\w+)/);
+            if (match) {
+                lang = match[1];
+            } else {
+                match = classes.match(/language-(\S+)/);
+                if (match) lang = match[1];
+            }
+
+            if (lang) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = lang;
+                block.style.position = 'relative';
+                block.insertBefore(label, block.firstChild);
+            }
+        });
+    }
+
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initTocSpy();
+            addCodeLangLabels();
+        });
+    } else {
+        initTocSpy();
+        addCodeLangLabels();
+    }
+})();
+</script>
+
+</head>
+<body id="top">
+    <header class="header" id="site-header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SciFiReal (Alt + H)">SciFiReal</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <a class="search-trigger" href="http://localhost:1313/search/" title="搜索" accesskey="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+        </a>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="http://localhost:1313/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags/" title="标签墙">
+                    <span>标签墙</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<div class="article-layout">
+  <div class="article-main">
+    <article class="post-single">
+      <header class="post-header">
+        <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">首页</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+        <h1 class="post-title entry-hint-parent">
+          OOP篇03-类进阶：const成员函数、this指针与静态成员
+        </h1>
+        <div class="post-meta">
+
+<span title='2026-10-06 17:30:46 +0800 CST'>October 6, 2026</span>&nbsp;·&nbsp;<span>1 min</span>&nbsp;·&nbsp;<span>184 words</span>&nbsp;·&nbsp;<span>Hi, I&#39;m SciFiReal</span>
+
+</div>
+        <div class="post-header-tags">
+          <a class="tag-pill" href="http://localhost:1313/tags/c&#43;&#43;/">C&#43;&#43;</a>
+        </div>
+      </header> 
+      <div class="post-content md-content"><h2 id="1-const成员函数">1. const成员函数<a hidden class="anchor" aria-hidden="true" href="#1-const成员函数">#</a></h2>
+<p>在成员函数后面添加<code>const</code></p>
+<pre tabindex="0"><code>// 普通成员函数：可以读写成员变量
+int getAge()
+{
+    age = 100; // ✅可以修改成员
+    return age;
+}
+
+// const成员函数：承诺本函数不会修改任何成员变量
+int getAge() const
+{
+    // age = 100; // ❌编译报错！不能修改成员
+    return age;
+}
+</code></pre><blockquote>
+<p>原理：</p>
+<p><code>const</code>成员函数，<code>this</code>指针变成<code>const Person* this</code>，也就是说当前对象被当成了常量对象，不能修改对象里面的数据。</p>
+</blockquote>
+<blockquote>
+<p>为什么要这样用呢？</p>
+<ol>
+<li>当你不小心在查询函数中写了修改代码，编译会帮助你发现错误；</li>
+<li><code>const</code>对象只能调用<code>const</code>成员函数</li>
+</ol>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">const</span> <span class="n">Person</span> <span class="n">p</span><span class="p">;</span> <span class="c1">// 常量对象，不能修改里面数据
+</span></span></span><span class="line"><span class="cl"><span class="c1">// p.setAge(18); // ❌普通成员函数，会修改数据，不能调用
+</span></span></span><span class="line"><span class="cl"><span class="n">p</span><span class="p">.</span><span class="n">getAge</span><span class="p">();</span>     <span class="c1">// ✅const成员函数，只读，可以调用
+</span></span></span></code></pre></div><blockquote>
+<p>用在什么地方呢？</p>
+<p>查询、打印、读取、计算，不改动成员的函数，全部加上末尾<code>const</code></p>
+</blockquote>
+<hr>
+<h2 id="2-this指针">2. this指针<a hidden class="anchor" aria-hidden="true" href="#2-this指针">#</a></h2>
+<p>之前也提到过成员函数隐藏的<code>this</code>指针， 等价于<code>Person* this</code>,指向调用这个函数的对象。基础用法如下：</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">setAge</span><span class="p">(</span><span class="kt">int</span> <span class="n">age</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">this</span><span class="o">-&gt;</span><span class="n">age</span> <span class="o">=</span> <span class="n">age</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl">    <span class="c1">// this-&gt;age：对象成员age；右边age：传入参数
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p>有两个核心用途</p>
+<ol>
+<li>返回当前对象的引用，实现链式调用（作用：让你可以连续调用多个成员函数，写代码更连贯简洁，不用重复写对象名）</li>
+</ol>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Person</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">age</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Person</span><span class="o">&amp;</span> <span class="n">setAge</span><span class="p">(</span><span class="kt">int</span> <span class="n">a</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">age</span> <span class="o">=</span> <span class="n">a</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="o">*</span><span class="k">this</span><span class="p">;</span> <span class="c1">// 返回当前对象本身的引用
+</span></span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 链式调用
+</span></span></span><span class="line"><span class="cl"><span class="n">Person</span> <span class="n">p</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">p</span><span class="p">.</span><span class="n">setAge</span><span class="p">(</span><span class="mi">10</span><span class="p">).</span><span class="n">setAge</span><span class="p">(</span><span class="mi">20</span><span class="p">);</span>
+</span></span></code></pre></div><blockquote>
+<ol start="2">
+<li>在成员函数内部，可以拿到当前对象地址，用来和别的对象对比</li>
+</ol>
+</blockquote>
+<hr>
+<h2 id="3-静态成员">3. 静态成员<a hidden class="anchor" aria-hidden="true" href="#3-静态成员">#</a></h2>
+<p>静态成员包括静态成员变量和静态成员函数；静态成员不属于任何对象，是属于这个类，所有对象都共享这个内存。</p>
+<ol>
+<li>静态成员变量</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Person</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">static</span> <span class="kt">int</span> <span class="n">count</span><span class="p">;</span> <span class="c1">// 静态成员声明，属于类，不属于单个对象
+</span></span></span><span class="line"><span class="cl">    <span class="n">Person</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">count</span><span class="o">++</span><span class="p">;</span> <span class="c1">// 每新建一个对象，总数+1
+</span></span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 静态变量！必须在类外面初始化！
+</span></span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">Person</span><span class="o">::</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Person</span> <span class="n">p1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Person</span> <span class="n">p2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">Person</span><span class="o">::</span><span class="n">count</span><span class="p">;</span> <span class="c1">// 直接用类名访问，输出2
+</span></span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p>由上述例子可知：静态成员变量<code>static</code>，不管创建多少对象<code>p1</code>,<code>p2</code>，内存中只有这一份，<code>p1</code>和<code>p2</code>共享静态成员变量。</p>
+</blockquote>
+<ol start="2">
+<li>
+<p>静态成员函数</p>
+<p>特点是没有<code>this</code>指针，因为不属于任何对象。</p>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Person</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">static</span> <span class="kt">int</span> <span class="n">count</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">static</span> <span class="kt">void</span> <span class="nf">showCount</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">count</span><span class="p">;</span> <span class="c1">// ✅ 1. 可以访问静态变量
+</span></span></span><span class="line"><span class="cl">        <span class="c1">// cout &lt;&lt; age; // ❌不能访问普通成员，没有this，不知道是谁的age
+</span></span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">age</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">Person</span><span class="o">::</span><span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Person</span><span class="o">::</span><span class="n">showCount</span><span class="p">();</span> <span class="c1">// ✅2.不用创建对象，直接调用静态函数
+</span></span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p>由上述例子可知：</p>
+<p>静态成员函数只能访问静态变量；</p>
+<p>不用创建对象，直接调用静态函数；</p>
+</blockquote>
+<blockquote>
+<p>怎么时候用呢？某个类共享数据/行为，不属于单个对象</p>
+<ol>
+<li>静态成员变量，保存类的全局信息，；</li>
+<li>静态成员函数，类的工具函数，不需要对象就能调用；</li>
+</ol>
+</blockquote>
+
+
+      </div>
+
+      <footer class="post-footer">
+          <nav class="series-nav">
+            <div class="series-nav-label">
+              <span>Posts 系列</span>
+              <span>24 篇</span>
+            </div>
+            <div class="series-nav-links">
+              <a class="series-nav-prev" href="http://localhost:1313/posts/oop%E7%AF%8702-%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E4%B8%8E%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%AE%8C%E6%95%B4%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E7%AE%A1%E7%90%86/">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                <div>
+                  <span class="series-nav-dir">上一篇</span>
+                  <span class="series-nav-title">OOP篇02-构造函数与析构函数：对象的完整生命周期管理</span>
+                </div>
+              </a>
+              <a class="series-nav-next" href="http://localhost:1313/posts/oop%E7%AF%8704-%E5%8F%8B%E5%85%83%E5%87%BD%E6%95%B0%E4%B8%8E%E5%8F%8B%E5%85%83%E7%B1%BB%E7%89%B9%E6%AE%8A%E8%AE%BF%E9%97%AE%E9%80%9A%E9%81%93%E4%B8%8E%E5%B0%81%E8%A3%85%E8%BE%B9%E7%95%8C/">
+                <div>
+                  <span class="series-nav-dir">下一篇</span>
+                  <span class="series-nav-title">OOP篇04-友元函数与友元类：特殊访问通道与封装边界</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </a>
+            </div>
+          </nav>
+      </footer>
+    </article>
+  </div>
+
+  <aside class="article-sidebar"><div class="sidebar-toc" id="sidebar-toc">
+      <div class="toc-title">目录</div>
+      <nav id="toc-nav">
+        <ul><li class="toc-h2">
+            <a href="#1-const%e6%88%90%e5%91%98%e5%87%bd%e6%95%b0" data-heading="1-const成员函数">1. const成员函数</a>
+          </li><li class="toc-h2">
+            <a href="#2-this%e6%8c%87%e9%92%88" data-heading="2-this指针">2. this指针</a>
+          </li><li class="toc-h2">
+            <a href="#3-%e9%9d%99%e6%80%81%e6%88%90%e5%91%98" data-heading="3-静态成员">3. 静态成员</a>
+          </li></ul>
+      </nav>
+    </div></aside>
+</div>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">SciFiReal</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

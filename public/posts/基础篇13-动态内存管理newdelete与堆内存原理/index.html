@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto" data-theme="dark">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>基础篇13-动态内存管理：new/delete与堆内存原理 | SciFiReal</title>
+<meta name="keywords" content="C&#43;&#43;">
+<meta name="description" content="基础篇13-动态内存管理：new/delete与堆内存原理">
+<meta name="author" content="Hi, I&#39;m SciFiReal">
+<link rel="canonical" href="http://localhost:1313/posts/%E5%9F%BA%E7%A1%80%E7%AF%8713-%E5%8A%A8%E6%80%81%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86newdelete%E4%B8%8E%E5%A0%86%E5%86%85%E5%AD%98%E5%8E%9F%E7%90%86/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.1e36c4a1f2d39bc19f6dbcfacb43456c3488ab03bc6ecc0f37e894aa87f2722a.css" integrity="sha256-HjbEofLTm8Gfbbz6y0NFbDSIqwO8bswPN&#43;iUqofycio=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/%E5%9F%BA%E7%A1%80%E7%AF%8713-%E5%8A%A8%E6%80%81%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86newdelete%E4%B8%8E%E5%A0%86%E5%86%85%E5%AD%98%E5%8E%9F%E7%90%86/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "light") {
+        document.querySelector("html").dataset.theme = 'light';
+    }
+
+</script><style>
+     
+    .header { transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease; }
+</style>
+<script>
+(function() {
+    'use strict';
+
+    
+    var header = document.getElementById('site-header');
+    if (header) {
+        var onScroll = function() {
+            if (window.scrollY > 20) {
+                header.classList.add('header--scrolled');
+            } else {
+                header.classList.remove('header--scrolled');
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function initTocSpy() {
+        var tocNav = document.getElementById('toc-nav');
+        if (!tocNav) return;
+
+        var links = tocNav.querySelectorAll('a[data-heading]');
+        if (links.length === 0) return;
+
+        var headings = [];
+        links.forEach(function(link) {
+            var id = link.getAttribute('data-heading');
+            var heading = document.getElementById(id);
+            if (heading) {
+                headings.push({ el: heading, link: link });
+            }
+        });
+
+        if (headings.length === 0) return;
+
+        var activeLink = null;
+
+        function setActive(link) {
+            if (activeLink === link) return;
+            if (activeLink) activeLink.classList.remove('toc-active');
+            if (link) {
+                link.classList.add('toc-active');
+                
+                var sidebar = document.getElementById('sidebar-toc');
+                if (sidebar) {
+                    var linkRect = link.getBoundingClientRect();
+                    var sidebarRect = sidebar.getBoundingClientRect();
+                    if (linkRect.top < sidebarRect.top + 40 || linkRect.bottom > sidebarRect.bottom - 20) {
+                        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                }
+            }
+            activeLink = link;
+        }
+
+        function onScroll() {
+            var scrollPos = window.scrollY + 100;
+            var current = null;
+
+            for (var i = headings.length - 1; i >= 0; i--) {
+                if (headings[i].el.offsetTop <= scrollPos) {
+                    current = headings[i];
+                    break;
+                }
+            }
+
+            if (current) {
+                setActive(current.link);
+            } else if (headings.length > 0) {
+                setActive(headings[0].link);
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function addCodeLangLabels() {
+        var blocks = document.querySelectorAll('.post-content pre, .md-content .highlight');
+        blocks.forEach(function(block) {
+            if (block.querySelector('.code-lang-label')) return;
+
+            var code = block.querySelector('code');
+            if (!code) return;
+
+            var lang = '';
+            var classes = code.className || '';
+            var match = classes.match(/language-(\w+)/);
+            if (match) {
+                lang = match[1];
+            } else {
+                match = classes.match(/language-(\S+)/);
+                if (match) lang = match[1];
+            }
+
+            if (lang) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = lang;
+                block.style.position = 'relative';
+                block.insertBefore(label, block.firstChild);
+            }
+        });
+    }
+
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initTocSpy();
+            addCodeLangLabels();
+        });
+    } else {
+        initTocSpy();
+        addCodeLangLabels();
+    }
+})();
+</script>
+
+</head>
+<body id="top">
+    <header class="header" id="site-header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SciFiReal (Alt + H)">SciFiReal</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <a class="search-trigger" href="http://localhost:1313/search/" title="搜索" accesskey="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+        </a>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="http://localhost:1313/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags/" title="标签墙">
+                    <span>标签墙</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<div class="article-layout">
+  <div class="article-main">
+    <article class="post-single">
+      <header class="post-header">
+        <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">首页</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+        <h1 class="post-title entry-hint-parent">
+          基础篇13-动态内存管理：new/delete与堆内存原理
+        </h1>
+        <div class="post-meta">
+
+<span title='2026-10-06 09:02:26 +0800 CST'>October 6, 2026</span>&nbsp;·&nbsp;<span>1 min</span>&nbsp;·&nbsp;<span>148 words</span>&nbsp;·&nbsp;<span>Hi, I&#39;m SciFiReal</span>
+
+</div>
+        <div class="post-header-tags">
+          <a class="tag-pill" href="http://localhost:1313/tags/c&#43;&#43;/">C&#43;&#43;</a>
+        </div>
+      </header> 
+      <div class="post-content md-content"><p>C++程序运行时的两大内存空间：栈和堆</p>
+<h2 id="1-栈">1. 栈<a hidden class="anchor" aria-hidden="true" href="#1-栈">#</a></h2>
+<p>本质上是函数运行临时用的小工作台，函数结束，台子直接清空</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">someFunction</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span> 
+</span></span><span class="line"><span class="cl">	<span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span> <span class="c1">// x在栈上，4字节 
+</span></span></span><span class="line"><span class="cl">	<span class="kt">double</span> <span class="n">arr</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span> <span class="c1">// 数组在栈上，80字节 
+</span></span></span><span class="line"><span class="cl">	<span class="c1">// 函数结束时栈指针回退，x和arr自动”销毁”
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>栈的特点：</p>
+<ul>
+<li>
+<p><strong>内存由操作系统自动管理</strong></p>
+<p>上述例子中定义局部变量，自动压入栈；函数执行完，自动回收内存。</p>
+</li>
+<li>
+<p><strong>栈空间很小</strong>，一般就几MB（Windows默认1M，Linux默认8MB）</p>
+<p>栈开太大数组会直接栈溢出程序奔溃。</p>
+</li>
+<li>
+<p>分配速度极快，只是移动指针，不需要找空闲内存块。</p>
+</li>
+<li>
+<p>后进先出：最后放进去的变量最先销毁。</p>
+</li>
+<li>
+<p>存放内容：<strong>局部变量，函数参数，函数返回地址</strong></p>
+<p>注意不要返回局部变量的指针/引用，函数结束栈内存就失效，变成野指针。</p>
+</li>
+<li>
+<p>大小在编译时确定，不支持<strong>动态数组</strong></p>
+</li>
+</ul>
+<hr>
+<h2 id="2-堆">2. 堆<a hidden class="anchor" aria-hidden="true" href="#2-堆">#</a></h2>
+<p>工作原理：相当于向系统租了一个大仓库，租和清理都需要你自己处理。堆内存是由程序员手动管理。<code>new</code>在堆上分配内存并返回<strong>首地址</strong>，<code>delete</code>释放这块内存。堆上的内存不会因为函数返回而自动消失—它会一直存在，知道程序显示调用<code>delete</code>或程序结束。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">func</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span><span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span> <span class="c1">// 在堆上申请一块int内存，p这个指针本身在栈上！
+</span></span></span><span class="line"><span class="cl">    <span class="kt">int</span><span class="o">*</span> <span class="n">arr</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="mi">1000</span><span class="p">];</span> <span class="c1">// 堆上开数组
+</span></span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">delete</span> <span class="n">p</span><span class="p">;</span>      <span class="c1">// 归还单个对象
+</span></span></span><span class="line"><span class="cl">    <span class="k">delete</span><span class="p">[]</span> <span class="n">arr</span><span class="p">;</span>  <span class="c1">// 归还数组
+</span></span></span><span class="line"><span class="cl">  	<span class="n">arr</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span> <span class="c1">// 置空，防止野指针
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// p本身是局部变脸，但指向堆内存上的空间，函数结束，p被销毁，但堆内存上的空间未被销毁。
+</span></span></span></code></pre></div><p>堆的特点：</p>
+<ul>
+<li>程序员手动管理内存；</li>
+<li>堆空间巨大；</li>
+<li>分配慢，操作系统需要从堆中找到一块足够大的空闲内存块；</li>
+<li>大小在运行时确定，支持<strong>动态数组</strong>；</li>
+<li>自由使用，自行分配，自行释放；</li>
+</ul>
+<hr>
+<h2 id="3-动态数组">3. 动态数组<a hidden class="anchor" aria-hidden="true" href="#3-动态数组">#</a></h2>
+<p>动态数组等于在堆内存上开辟空间，大小在运行是确定；普通数组在栈上开辟空间，编译时就确定，大小必须写死。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">test</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span><span class="o">*</span> <span class="n">p_arr</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="n">n</span><span class="p">];</span> 
+</span></span><span class="line"><span class="cl">    <span class="c1">// p_arr 这个指针变量本身【在栈上】
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// new int[n] 在【堆】开辟能放n个int的连续内存，就是动态数组
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">p_arr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">p_arr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">delete</span><span class="p">[]</span> <span class="n">p_arr</span><span class="p">;</span> <span class="c1">// ！！！释放堆数组，必须带[]，和new[]配对
+</span></span></span><span class="line"><span class="cl">    <span class="n">p_arr</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span> <span class="c1">// 置空，防止野指针(如果后续要接着使用该指针就置空)
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p>注意：堆数组不能检查下标，超出范围，会破坏相邻堆内存。栈数组也有越界问题</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">int</span><span class="o">*</span> <span class="n">p</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="p">[</span><span class="mi">10</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// sizeof(p) 得到的是指针大小（8字节64位系统），不是数组总字节！
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 没法像栈数组那样 sizeof(arr)/sizeof(arr[0]) 求长度
+</span></span></span></code></pre></div><blockquote>
+<p>因此现代C++提供了<strong>容器</strong>，不使用<code>new[]</code></p>
+</blockquote>
+<p><code>std::vector</code>就是封装好的动态数组，底层依然是堆内存，管理<code>new[]</code>和<code>delete[]</code>，不用手动释放。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">test</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="mi">100</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">vec</span><span class="p">(</span><span class="n">n</span><span class="p">);</span> <span class="c1">// 底层数据在堆；vec对象本身在栈
+</span></span></span><span class="line"><span class="cl">    <span class="n">vec</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">99</span><span class="p">);</span> <span class="c1">// 自动扩容
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 离开作用域，vec自动销毁，自动释放堆内存，无内存泄漏
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>优点：自动扩容；自动释放；自带<code>size()</code>获取长度，项目开发首选。</p>
+
+
+      </div>
+
+      <footer class="post-footer">
+          <nav class="series-nav">
+            <div class="series-nav-label">
+              <span>Posts 系列</span>
+              <span>24 篇</span>
+            </div>
+            <div class="series-nav-links">
+              <a class="series-nav-prev" href="http://localhost:1313/posts/%E5%87%BD%E6%95%B0%E7%AF%8702-%E5%87%BD%E6%95%B0%E8%BF%9B%E9%98%B6%E9%87%8D%E8%BD%BD%E9%BB%98%E8%AE%A4%E5%8F%82%E6%95%B0%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88%E4%B8%8E%E9%80%92%E5%BD%92/">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                <div>
+                  <span class="series-nav-dir">上一篇</span>
+                  <span class="series-nav-title">函数篇02-函数进阶：重载、默认参数、函数指针与递归</span>
+                </div>
+              </a>
+              <a class="series-nav-next" href="http://localhost:1313/posts/oop%E7%AF%8701-%E7%B1%BB%E4%B8%8E%E5%AF%B9%E8%B1%A1%E5%B0%81%E8%A3%85%E7%9A%84%E5%8A%9B%E9%87%8F%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%E4%B8%8E%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6/">
+                <div>
+                  <span class="series-nav-dir">下一篇</span>
+                  <span class="series-nav-title">OOP篇01-类与对象：封装的力量、成员函数与访问控制</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </a>
+            </div>
+          </nav>
+      </footer>
+    </article>
+  </div>
+
+  <aside class="article-sidebar"><div class="sidebar-toc" id="sidebar-toc">
+      <div class="toc-title">目录</div>
+      <nav id="toc-nav">
+        <ul><li class="toc-h2">
+            <a href="#1-%e6%a0%88" data-heading="1-栈">1. 栈</a>
+          </li><li class="toc-h2">
+            <a href="#2-%e5%a0%86" data-heading="2-堆">2. 堆</a>
+          </li><li class="toc-h2">
+            <a href="#3-%e5%8a%a8%e6%80%81%e6%95%b0%e7%bb%84" data-heading="3-动态数组">3. 动态数组</a>
+          </li></ul>
+      </nav>
+    </div></aside>
+</div>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">SciFiReal</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

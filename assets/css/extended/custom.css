@@ -642,6 +642,8 @@ a:hover {
     font-size: 13px;
     color: var(--color-muted-dim);
     font-variant-numeric: tabular-nums;
+    padding: 8px 0;
+    line-height: 1;
 }
 
 /* ============================================
@@ -1253,18 +1255,40 @@ details .inner {
 }
 
 /* --- 标签列表页 --- */
+.main:has(.terms-tags) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.main:has(.terms-tags) .page-header {
+    flex-shrink: 0;
+    text-align: center;
+    margin-bottom: 48px;
+}
+
 .terms-tags {
-    gap: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    max-width: 800px;
+}
+
+.terms-tags li {
+    display: inline-block;
+    font-weight: 500;
 }
 
 .terms-tags a {
+    display: block;
     background: var(--color-card);
     border: 1px solid var(--color-border-light);
     color: var(--color-muted);
     border-radius: var(--radius-sm);
-    padding: 6px 14px;
-    font-size: 14px;
-    font-weight: 450;
+    padding: 10px 20px;
+    font-size: 17px;
+    font-weight: 500;
     transition: all 0.2s;
 }
 
@@ -1426,6 +1450,8 @@ details .inner {
    ============================================ */
 .pagination {
     display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 12px;
     margin-top: 36px;
 }
@@ -1932,6 +1958,11 @@ details .inner {
         justify-content: flex-start;
         text-align: left;
     }
+
+    .terms-tags a {
+        font-size: 15px;
+        padding: 8px 16px;
+    }
 }
 
 @media screen and (max-width: 600px) {
@@ -1979,6 +2010,11 @@ details .inner {
 
     .list-card-arrow {
         display: none;
+    }
+
+    .terms-tags a {
+        font-size: 14px;
+        padding: 7px 14px;
     }
 }
 
