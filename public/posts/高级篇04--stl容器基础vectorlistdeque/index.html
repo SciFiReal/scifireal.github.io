@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="auto" data-theme="light" translate="no">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>高级篇04-STL容器基础：vector、list、deque | SciFiReal</title>
+<meta name="keywords" content="C&#43;&#43;">
+<meta name="description" content="高级篇04-STL容器基础：vector、list、deque">
+<meta name="author" content="Hi, I&#39;m SciFiReal">
+<link rel="canonical" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8704--stl%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80vectorlistdeque/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.341560dc62f78a6c33ce7366efce8909226a3827c3fc790333b2217f53d96f08.css" integrity="sha256-NBVg3GL3imwzznNm786JCSJqOCfD/HkDM7Ihf1PZbwg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="zh-cn" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8704--stl%E5%AE%B9%E5%99%A8%E5%9F%BA%E7%A1%80vectorlistdeque/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    }
+
+</script><style>
+     
+    .header { transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease; }
+</style>
+<script>
+(function() {
+    'use strict';
+
+    
+    var header = document.getElementById('site-header');
+    if (header) {
+        var onScroll = function() {
+            if (window.scrollY > 20) {
+                header.classList.add('header--scrolled');
+            } else {
+                header.classList.remove('header--scrolled');
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function initTocSpy() {
+        var tocNav = document.getElementById('toc-nav');
+        if (!tocNav) return;
+
+        var links = tocNav.querySelectorAll('a[data-heading]');
+        if (links.length === 0) return;
+
+        var headings = [];
+        links.forEach(function(link) {
+            var id = link.getAttribute('data-heading');
+            var heading = document.getElementById(id);
+            if (heading) {
+                headings.push({ el: heading, link: link });
+            }
+        });
+
+        if (headings.length === 0) return;
+
+        var activeLink = null;
+
+        function setActive(link) {
+            if (activeLink === link) return;
+            if (activeLink) activeLink.classList.remove('toc-active');
+            if (link) {
+                link.classList.add('toc-active');
+                
+                var sidebar = document.getElementById('sidebar-toc');
+                if (sidebar) {
+                    var linkRect = link.getBoundingClientRect();
+                    var sidebarRect = sidebar.getBoundingClientRect();
+                    if (linkRect.top < sidebarRect.top + 40 || linkRect.bottom > sidebarRect.bottom - 20) {
+                        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                }
+            }
+            activeLink = link;
+        }
+
+        function onScroll() {
+            var scrollPos = window.scrollY + 100;
+            var current = null;
+
+            for (var i = headings.length - 1; i >= 0; i--) {
+                if (headings[i].el.offsetTop <= scrollPos) {
+                    current = headings[i];
+                    break;
+                }
+            }
+
+            if (current) {
+                setActive(current.link);
+            } else if (headings.length > 0) {
+                setActive(headings[0].link);
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function addCodeLangLabels() {
+        var blocks = document.querySelectorAll('.post-content pre, .md-content .highlight');
+        blocks.forEach(function(block) {
+            if (block.querySelector('.code-lang-label')) return;
+
+            var code = block.querySelector('code');
+            if (!code) return;
+
+            var lang = '';
+            var classes = code.className || '';
+            var match = classes.match(/language-(\w+)/);
+            if (match) {
+                lang = match[1];
+            } else {
+                match = classes.match(/language-(\S+)/);
+                if (match) lang = match[1];
+            }
+
+            if (lang) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = lang;
+                block.style.position = 'relative';
+                block.insertBefore(label, block.firstChild);
+            }
+        });
+    }
+
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initTocSpy();
+            addCodeLangLabels();
+        });
+    } else {
+        initTocSpy();
+        addCodeLangLabels();
+    }
+})();
+</script>
+
+</head>
+<body id="top" translate="no">
+    <header class="header" id="site-header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SciFiReal (Alt + H)">SciFiReal</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <a class="search-trigger" href="http://localhost:1313/search/" title="搜索" accesskey="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+        </a>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="http://localhost:1313/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags/" title="标签墙">
+                    <span>标签墙</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<div class="article-layout">
+  <div class="article-main">
+    <article class="post-single">
+      <header class="post-header">
+        <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">首页</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+        <h1 class="post-title entry-hint-parent">
+          高级篇04-STL容器基础：vector、list、deque
+        </h1>
+        <div class="post-meta">
+
+<span title='2026-10-08 14:36:08 +0800 CST'>October 8, 2026</span>&nbsp;·&nbsp;<span>7 min</span>&nbsp;·&nbsp;<span>1274 words</span>&nbsp;·&nbsp;<span>Hi, I&#39;m SciFiReal</span>
+
+</div>
+        <div class="post-header-tags">
+          <a class="tag-pill" href="http://localhost:1313/tags/c&#43;&#43;/">C&#43;&#43;</a>
+        </div>
+      </header> 
+      <div class="post-content md-content"><blockquote>
+<p>我们之前学过的基础篇的动态内存管理，需要用new手动分配数组，但每次都要自己管理大小、扩容、释放。STL（Standard Template Library—标准模板库）把这种工作自动化。它提供一套==模板化的容器类==，用泛型编程的方式管理任意类型的数据，内部自动处理内存分配和释放。</p>
+</blockquote>
+<blockquote>
+<p>什么是STL？</p>
+</blockquote>
+<p>STL是C++标准库的核心组件之一，包含四大部分：</p>
+<ul>
+<li>==容器==：存储数据的结构（vector，list，map，set等）；</li>
+<li>==算法==：操作容器数据的通用算法（sort，find，copy等）；</li>
+<li>==迭代器==：连接容器和算法的桥梁（像指针一样遍历容器）；</li>
+<li>函数对象/==适配器==：灵活扩展算法行为；</li>
+</ul>
+<p>STL的核心设计理念是模板化+泛型编程：写一次模板代码，可以用在任意类型上（如<code>vector&lt;int&gt;</code>存int，<code>vector&lt;string&gt;</code>存字符串，<code>vector&lt;Device&gt;</code>存自定义类）。</p>
+<p>接下来介绍三大序列容器：</p>
+<ul>
+<li><code>vector</code>（向量/动态数组）：连续内存，支持O(1)随机访问，我i不插入O(1)，中间插入O(n)</li>
+<li><code>list</code>（双向链表）：节点不连续，任何位置插入/删除都是O(1)，但随机访问要O(n)</li>
+<li><code>deque</code>(双端队列)：分段连续内存，头尾插入/删除都是O(1)，支持随机访问O(1)</li>
+</ul>
+<h2 id="1-vector最常用的动态数组">1. vector：最常用的动态数组<a hidden class="anchor" aria-hidden="true" href="#1-vector最常用的动态数组">#</a></h2>
+<p>vector在内部维护一块连续内存，像数组一样用下标访问，但可以自动扩容。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">   </span><span class="c1">// vector 动态数组头文件
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;stdexcept&gt;</span><span class="cp"> </span><span class="c1">// out_of_range异常需要这个头文件
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 传感器数据结构体：存放传感器编号、名称、温度
+</span></span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">SensorData</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">id</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">string</span> <span class="n">name</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">double</span> <span class="n">temperature</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 构造函数：创建对象时直接赋值
+</span></span></span><span class="line"><span class="cl">    <span class="n">SensorData</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">string</span> <span class="n">n</span> <span class="o">=</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="kt">double</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">:</span> <span class="n">id</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">name</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">temperature</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===================== 1. vector 初始化 =====================
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;=== 1. vector 初始化 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v1</span><span class="p">;</span>                  <span class="c1">// 空vector：存放int，当前没有元素
+</span></span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v2</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>           <span class="c1">// 创建10个int元素，全部初始化为0
+</span></span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v3</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">};</span><span class="c1">// 列表初始化，直接放入5个数字
+</span></span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">vs</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#34;Hello&#34;</span><span class="p">);</span>   <span class="c1">// 创建3个字符串，都是&#34;Hello&#34;
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;v1当前元素个数(size): &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">v1</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;v3里面的元素: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">v3</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">v3</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===================== 2. push_back：尾部添加元素 =====================
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 2. push_back 在尾部插入元素 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="n">SensorData</span><span class="o">&gt;</span> <span class="n">sensors</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 在数组末尾追加传感器对象
+</span></span></span><span class="line"><span class="cl">    <span class="n">sensors</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">SensorData</span><span class="p">(</span><span class="mi">1001</span><span class="p">,</span> <span class="s">&#34;加热炉A&#34;</span><span class="p">,</span> <span class="mf">78.5</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">sensors</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">SensorData</span><span class="p">(</span><span class="mi">1002</span><span class="p">,</span> <span class="s">&#34;冷却塔B&#34;</span><span class="p">,</span> <span class="mf">28.3</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">sensors</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">SensorData</span><span class="p">(</span><span class="mi">2001</span><span class="p">,</span> <span class="s">&#34;反应釜C&#34;</span><span class="p">,</span> <span class="mf">125.8</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;插入3个传感器后，元素数量: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sensors</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===================== 3. 访问vector元素 =====================
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 3. 访问vector元素 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// []下标访问：速度快，但越界不会报错（不安全）
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;sensors[0]: ID=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sensors</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">id</span>
+</span></span><span class="line"><span class="cl">         <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sensors</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">name</span>
+</span></span><span class="line"><span class="cl">         <span class="o">&lt;&lt;</span> <span class="s">&#34; 温度=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sensors</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">temperature</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;度&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// at()访问：越界会抛出异常，安全访问方式
+</span></span></span><span class="line"><span class="cl">    <span class="k">try</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;尝试访问 sensors.at(10): &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sensors</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">10</span><span class="p">).</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">catch</span> <span class="p">(</span><span class="k">const</span> <span class="n">out_of_range</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;at(10) 越界错误: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">e</span><span class="p">.</span><span class="n">what</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// front() 获取第一个元素；back() 获取最后一个元素
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;第一个传感器: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sensors</span><span class="p">.</span><span class="n">front</span><span class="p">().</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;最后一个传感器: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sensors</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===================== 4. vector 遍历方式 =====================
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 4. vector 的两种遍历方式 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;方式1：下标索引遍历（简单直观）&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">sensors</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  [&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;] ID=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sensors</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">id</span>
+</span></span><span class="line"><span class="cl">             <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sensors</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">name</span>
+</span></span><span class="line"><span class="cl">             <span class="o">&lt;&lt;</span> <span class="s">&#34; 温度=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sensors</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">temperature</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;度&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;方式2：迭代器遍历（STL标准写法）&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// begin() 指向第一个元素；end() 指向末尾空白位置（不是最后一个元素）
+</span></span></span><span class="line"><span class="cl">  	<span class="c1">// iterator（迭代器）就是 STL 容器的 “通用指针”，用来遍历容器里的元素
+</span></span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">SensorData</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">sensors</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">         <span class="n">it</span> <span class="o">!=</span> <span class="n">sensors</span><span class="p">.</span><span class="n">end</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">         <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  ID=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===================== 5. 删除元素 =====================
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 5. 删除元素 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">sensors</span><span class="p">.</span><span class="n">pop_back</span><span class="p">();</span>  <span class="c1">// pop_back：删除末尾元素，不返回被删的值
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;pop_back删除末尾元素后，数量: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sensors</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">sensors</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>     <span class="c1">// clear：清空vector中所有元素，size变成0
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;clear清空后 size=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sensors</span><span class="p">.</span><span class="n">size</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">         <span class="o">&lt;&lt;</span> <span class="s">&#34; 是否为空: &#34;</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">sensors</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span> <span class="o">?</span> <span class="s">&#34;是&#34;</span> <span class="o">:</span> <span class="s">&#34;否&#34;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===================== 6. size 和 capacity：元素数量 vs 内存容量 =====================
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 6. 容量管理 size / capacity / reserve / resize ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">data</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//capacity()；底层已经分配好的内存容量
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;初始状态: size=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; capacity=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">.</span><span class="n">capacity</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// reserve：预留内存空间！只开内存，**不会创建元素，size不变**
+</span></span></span><span class="line"><span class="cl">    <span class="n">data</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="mi">1000</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;reserve(1000)预留空间后: size=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">         <span class="o">&lt;&lt;</span> <span class="s">&#34; capacity=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">.</span><span class="n">capacity</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">500</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">data</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;插入500个元素后: size=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">         <span class="o">&lt;&lt;</span> <span class="s">&#34; capacity=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">.</span><span class="n">capacity</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// resize：修改元素个数！会新增/销毁元素，改变size
+</span></span></span><span class="line"><span class="cl">    <span class="n">data</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">100</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;resize(100)调整元素数量后: size=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">         <span class="o">&lt;&lt;</span> <span class="s">&#34; capacity=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">.</span><span class="n">capacity</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===================== 7. 嵌套vector：模拟二维数组 =====================
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 7. 嵌套vector（二维动态数组） ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 3行4列，全部初始化为0
+</span></span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">matrix</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">matrix</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">matrix</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">matrix</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mi">9</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">row</span> <span class="o">&lt;</span> <span class="n">matrix</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">row</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">col</span> <span class="o">&lt;</span> <span class="n">matrix</span><span class="p">[</span><span class="n">row</span><span class="p">].</span><span class="n">size</span><span class="p">();</span> <span class="n">col</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">matrix</span><span class="p">[</span><span class="n">row</span><span class="p">][</span><span class="n">col</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出结果：</p>
+<pre tabindex="0"><code>=== 1. vector 初始化 ===
+v1当前元素个数(size): 0
+v3里面的元素: 1 2 3 4 5
+
+=== 2. push_back 在尾部插入元素 ===
+插入3个传感器后，元素数量: 3
+
+=== 3. 访问vector元素 ===
+sensors[0]: ID=1001 加热炉A 温度=78.5度
+at(10) 越界错误: invalid vector subscript
+第一个传感器: 加热炉A
+最后一个传感器: 反应釜C
+
+=== 4. vector 的两种遍历方式 ===
+方式1：下标索引遍历（简单直观）
+  [0] ID=1001 加热炉A 温度=78.5度
+  [1] ID=1002 冷却塔B 温度=28.3度
+  [2] ID=2001 反应釜C 温度=125.8度
+方式2：迭代器遍历（STL标准写法）
+  ID=1001 加热炉A
+  ID=1002 冷却塔B
+  ID=2001 反应釜C
+
+=== 5. 删除元素 ===
+pop_back删除末尾元素后，数量: 2
+clear清空后 size=0 是否为空: 是
+
+=== 6. 容量管理 size / capacity / reserve / resize ===
+初始状态: size=0 capacity=0
+reserve(1000)预留空间后: size=0 capacity=1000
+插入500个元素后: size=500 capacity=1000
+resize(100)调整元素数量后: size=100 capacity=1000
+
+=== 7. 嵌套vector（二维动态数组） ===
+1 0 0 0
+0 0 5 0
+0 0 0 9
+</code></pre><hr>
+<h2 id="2-list双向链表">2. list：双向链表<a hidden class="anchor" aria-hidden="true" href="#2-list双向链表">#</a></h2>
+<p><code>list</code>由节点组成，每个节点包含数据和两个指针（指向前一个和后一个节点）。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;list&gt;</span><span class="cp">   </span><span class="c1">// STL链表容器头文件
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 任务结构体：任务编号、任务名称、优先级
+</span></span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">Task</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">id</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">string</span> <span class="n">name</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">priority</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Task</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="p">,</span> <span class="n">string</span> <span class="n">n</span><span class="p">,</span> <span class="kt">int</span> <span class="n">p</span><span class="p">)</span> <span class="o">:</span> <span class="n">id</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="n">name</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">priority</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// list：双向链表容器
+</span></span></span><span class="line"><span class="cl">    <span class="n">list</span><span class="o">&lt;</span><span class="n">Task</span><span class="o">&gt;</span> <span class="n">tasks</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ========== 1. 添加元素 ==========
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// push_back：尾部插入；push_front：头部插入，双向链表头尾插入都是O(1)极快
+</span></span></span><span class="line"><span class="cl">    <span class="n">tasks</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">Task</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#34;数据采集&#34;</span><span class="p">,</span> <span class="mi">2</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tasks</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">Task</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s">&#34;数据处理&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tasks</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">Task</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&#34;数据存储&#34;</span><span class="p">,</span> <span class="mi">3</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tasks</span><span class="p">.</span><span class="n">push_front</span><span class="p">(</span><span class="n">Task</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s">&#34;初始化&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">));</span> <span class="c1">// 在链表最前面插入
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;任务列表（共&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">tasks</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;个）:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// list只能用迭代器遍历，没有下标[]
+</span></span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">list</span><span class="o">&lt;</span><span class="n">Task</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">tasks</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">tasks</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  ID=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">id</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; [&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">priority</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;] &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ========== 2. 获取首尾元素 ==========
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">第一个任务: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">tasks</span><span class="p">.</span><span class="n">front</span><span class="p">().</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;最后一个任务: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">tasks</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ========== 重点！list不支持 [] 下标随机访问 ==========
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// tasks[1];  // ❌ 编译报错！
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// 底层是分散的链表节点，内存不连续，不能直接跳转到第N个元素
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ========== 3. 在任意位置插入元素 ==========
+</span></span></span><span class="line"><span class="cl">    <span class="n">list</span><span class="o">&lt;</span><span class="n">Task</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">tasks</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="o">++</span><span class="n">it</span><span class="p">;</span>  <span class="c1">// 迭代器向后移动，指向第二个任务
+</span></span></span><span class="line"><span class="cl">    <span class="n">tasks</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">it</span><span class="p">,</span> <span class="n">Task</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="s">&#34;紧急任务&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span> <span class="c1">// 在it指向的位置前面插入新任务
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">插入紧急任务后:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">list</span><span class="o">&lt;</span><span class="n">Task</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it2</span> <span class="o">=</span> <span class="n">tasks</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it2</span> <span class="o">!=</span> <span class="n">tasks</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it2</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it2</span><span class="o">-&gt;</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; (优先级&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it2</span><span class="o">-&gt;</span><span class="n">priority</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;)&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ========== 4. 删除元素 ==========
+</span></span></span><span class="line"><span class="cl">    <span class="n">tasks</span><span class="p">.</span><span class="n">pop_front</span><span class="p">();</span>  <span class="c1">// 删除头部元素
+</span></span></span><span class="line"><span class="cl">    <span class="n">tasks</span><span class="p">.</span><span class="n">pop_back</span><span class="p">();</span>   <span class="c1">// 删除尾部元素
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">删除首尾后剩 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">tasks</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 个任务&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ========== 5. list 独有功能：merge合并、reverse反转 ==========
+</span></span></span><span class="line"><span class="cl">    <span class="n">list</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">list1</span><span class="p">,</span> <span class="n">list2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">list1</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span> <span class="n">list1</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span> <span class="n">list1</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">list2</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span> <span class="n">list2</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span> <span class="n">list2</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">6</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">list1</span><span class="p">.</span><span class="n">merge</span><span class="p">(</span><span class="n">list2</span><span class="p">);</span> <span class="c1">// 合并两个【已经有序】的链表，合并后list2变成空链表
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">合并后:&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">list</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it3</span> <span class="o">=</span> <span class="n">list1</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it3</span> <span class="o">!=</span> <span class="n">list1</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it3</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">it3</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">list1</span><span class="p">.</span><span class="n">reverse</span><span class="p">();</span> <span class="c1">// 链表反转
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;反转后:&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">list</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it4</span> <span class="o">=</span> <span class="n">list1</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it4</span> <span class="o">!=</span> <span class="n">list1</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it4</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">it4</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出结果：</p>
+<pre tabindex="0"><code>任务列表（共4个）:
+  ID=0 [1] 初始化
+  ID=1 [2] 数据采集
+  ID=2 [1] 数据处理
+  ID=3 [3] 数据存储
+
+第一个任务: 初始化
+最后一个任务: 数据存储
+
+插入紧急任务后:
+  初始化 (优先级1)
+  紧急任务 (优先级0)
+  数据采集 (优先级2)
+  数据处理 (优先级1)
+  数据存储 (优先级3)
+
+删除首尾后剩 3 个任务
+
+合并后: 1 2 3 4 5 6
+反转后: 6 5 4 3 2 1
+</code></pre><blockquote>
+<p>疑问：<code>list.merge()</code>为何能把两个有序列表合并后变成另外一个有序列表呢，如果是无序呢?</p>
+</blockquote>
+<p>上述示例如下：</p>
+<pre tabindex="0"><code>list1：1 → 3 → 5   （从小到大，本身有序）
+list2：2 → 4 → 6   （从小到大，本身有序）
+</code></pre><ol>
+<li>拿两个迭代器，分别指向 list1 头部、list2 头部；</li>
+<li>比较两个迭代器的值，<strong>把更小的那个节点摘下来，接到 list1 的尾部；</strong></li>
+<li>不断重复，直到其中一个链表取光；</li>
+<li>最后把剩下没取完的链表直接接在后面；</li>
+<li>合并完成后，<strong>list2 会变成空链表（节点全部转移走了，不是拷贝！）；</strong></li>
+</ol>
+<p>简单来说，1和2比较，1小，取1；3和2比较，2小，取2；3和4比较，取3；5和4比较，4小，取4；5和6比较，5小，取6；最后取6。同样无序列表合并也是这个逻辑。</p>
+<hr>
+<h2 id="3-deque双端队列">3. deque：双端队列<a hidden class="anchor" aria-hidden="true" href="#3-deque双端队列">#</a></h2>
+<p><code>deque</code>（Double-Ended QUEue）是vector和list的折中方案：分段连续内存，支持随机访问，头尾插入都很快。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;deque&gt;</span><span class="cp">   </span><span class="c1">// deque 双端队列头文件
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// deque：double-ended queue，双端队列
+</span></span></span><span class="line"><span class="cl">    <span class="n">deque</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">msgQueue</span><span class="p">;</span>  <span class="c1">// 消息队列容器，可以在头部、尾部快速增删
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ========== 1. 头部、尾部都可以高效插入元素 ==========
+</span></span></span><span class="line"><span class="cl">    <span class="n">msgQueue</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="s">&#34;消息1: 正常数据&#34;</span><span class="p">);</span>        <span class="c1">// 在【尾部】插入
+</span></span></span><span class="line"><span class="cl">    <span class="n">msgQueue</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="s">&#34;消息2: 正常数据&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">msgQueue</span><span class="p">.</span><span class="n">push_front</span><span class="p">(</span><span class="s">&#34;优先级消息: 紧急报警&#34;</span><span class="p">);</span>  <span class="c1">// 在【头部】插入，放高优先级消息
+</span></span></span><span class="line"><span class="cl">    <span class="n">msgQueue</span><span class="p">.</span><span class="n">push_front</span><span class="p">(</span><span class="s">&#34;优先级消息: 系统重启&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ========== 2. 支持随机访问，像vector一样用 [] 下标访问 ==========
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;队列大小: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">msgQueue</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">msgQueue</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  [&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;] &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">msgQueue</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ========== 3. 头部、尾部都可以高效删除元素 ==========
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">取出队首消息: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">msgQueue</span><span class="p">.</span><span class="n">front</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">msgQueue</span><span class="p">.</span><span class="n">pop_front</span><span class="p">();</span>  <span class="c1">// 删除头部元素
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;取出队尾消息: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">msgQueue</span><span class="p">.</span><span class="n">back</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">msgQueue</span><span class="p">.</span><span class="n">pop_back</span><span class="p">();</span>   <span class="c1">// 删除尾部元素
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">剩余 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">msgQueue</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 条消息:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">msgQueue</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">msgQueue</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出结果：</p>
+<pre tabindex="0"><code>队列大小: 4
+  [0] 优先级消息: 系统重启
+  [1] 优先级消息: 紧急报警
+  [2] 消息1: 正常数据
+  [3] 消息2: 正常数据
+
+取出队首消息: 优先级消息: 系统重启
+取出队尾消息: 消息2: 正常数据
+
+剩余 2 条消息:
+  优先级消息: 紧急报警
+  消息1: 正常数据
+</code></pre><hr>
+<blockquote>
+<p>选择建议：</p>
+</blockquote>
+<ul>
+<li>大多数场景用vector——随机访问块，默认首选；</li>
+<li>需要两端都频繁插入，删除(如队列，任务池)，用deque；</li>
+<li>需要两端频繁插入/删除且不需要随机访问，用list</li>
+</ul>
+<hr>
+<h2 id="4-探究deque的底层实现方式">4. 探究deque的底层实现方式<a hidden class="anchor" aria-hidden="true" href="#4-探究deque的底层实现方式">#</a></h2>
+<blockquote>
+<p>疑问：为什么<code>deque</code>的访问时间复杂度是O(1)？</p>
+</blockquote>
+<blockquote>
+<p>deque = <strong>中控索引数组 + 多个独立、等长的内存块</strong> 。</p>
+<p>每一块内部是连续数组；块与块之间<strong>不连续</strong>。</p>
+<p>中控表记录每一个内存块的起始地址，用来快速定位。</p>
+</blockquote>
+<p>假设设定：每个内存块最多放 4 个元素。</p>
+<pre tabindex="0"><code>中控表 map（存放各个内存块的起始地址，是数组）
+┌──────┬──────┬──────┐
+│块0地址│块1地址│块2地址│
+└──────┴──────┴──────┘
+    ↓        ↓        ↓
+┌────┬────┬────┬────┐  ┌────┬────┬────┬────┐  ┌────┬────┬────┬────┐
+│ 0  │ 1  │ 2  │ 3  │  │ 4  │ 5  │ 6  │ 7  │  │ 8  │ 9  │空 │空 │
+└────┴────┴────┴────┘  └────┴────┴────┴────┘  └────┴────┴────┴────┘
+   块0                    块1                   块2
+</code></pre><p>块内部内存连续；块 0、块 1、块 2 在内存里互相不挨在一起。</p>
+<p>举例：访问 deque [5]。</p>
+<p>元素下标 5，每个块容量 = 4</p>
+<ol>
+<li>块编号：<code>5 / 4 = 1</code> → 去中控表拿到「块 1 的起始地址」</li>
+<li>块内位置：<code>5 % 4 = 1</code> → 在块 1 里面取第 1 号位置的值（数字 5）</li>
+</ol>
+<p>两步算术，不管 deque 有 1000 个元素，算法步骤不变 → <strong>O(1)</strong></p>
+
+
+      </div>
+
+      <footer class="post-footer">
+          <nav class="series-nav">
+            <div class="series-nav-label">
+              <span>Posts 系列</span>
+              <span>30 篇</span>
+            </div>
+            <div class="series-nav-links">
+              <a class="series-nav-prev" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8703-string%E7%B1%BB%E5%8A%A8%E6%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%8Estringstream%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%B5%81/">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                <div>
+                  <span class="series-nav-dir">上一篇</span>
+                  <span class="series-nav-title">高级篇03-string类：动态字符串与stringstream字符串流</span>
+                </div>
+              </a>
+              <a class="series-nav-next" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8705-tl%E7%AE%97%E6%B3%95sortfindaccumulate%E4%B8%8E%E9%81%8D%E5%8E%86/">
+                <div>
+                  <span class="series-nav-dir">下一篇</span>
+                  <span class="series-nav-title">高级篇05-STL算法：sort、find、accumulate与遍历</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </a>
+            </div>
+          </nav>
+      </footer>
+    </article>
+  </div>
+
+  <aside class="article-sidebar"><div class="sidebar-toc" id="sidebar-toc">
+      <div class="toc-title">目录</div>
+      <nav id="toc-nav">
+        <ul><li class="toc-h2">
+            <a href="#1-vector%e6%9c%80%e5%b8%b8%e7%94%a8%e7%9a%84%e5%8a%a8%e6%80%81%e6%95%b0%e7%bb%84" data-heading="1-vector最常用的动态数组">1. vector：最常用的动态数组</a>
+          </li><li class="toc-h2">
+            <a href="#2-list%e5%8f%8c%e5%90%91%e9%93%be%e8%a1%a8" data-heading="2-list双向链表">2. list：双向链表</a>
+          </li><li class="toc-h2">
+            <a href="#3-deque%e5%8f%8c%e7%ab%af%e9%98%9f%e5%88%97" data-heading="3-deque双端队列">3. deque：双端队列</a>
+          </li><li class="toc-h2">
+            <a href="#4-%e6%8e%a2%e7%a9%b6deque%e7%9a%84%e5%ba%95%e5%b1%82%e5%ae%9e%e7%8e%b0%e6%96%b9%e5%bc%8f" data-heading="4-探究deque的底层实现方式">4. 探究deque的底层实现方式</a>
+          </li></ul>
+      </nav>
+    </div></aside>
+</div>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">SciFiReal</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>

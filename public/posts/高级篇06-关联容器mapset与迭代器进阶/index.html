@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="auto" data-theme="light" translate="no">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>高级篇06-关联容器：map、set与迭代器进阶 | SciFiReal</title>
+<meta name="keywords" content="C&#43;&#43;">
+<meta name="description" content="高级篇06-关联容器：map、set与迭代器进阶">
+<meta name="author" content="Hi, I&#39;m SciFiReal">
+<link rel="canonical" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8706-%E5%85%B3%E8%81%94%E5%AE%B9%E5%99%A8mapset%E4%B8%8E%E8%BF%AD%E4%BB%A3%E5%99%A8%E8%BF%9B%E9%98%B6/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.341560dc62f78a6c33ce7366efce8909226a3827c3fc790333b2217f53d96f08.css" integrity="sha256-NBVg3GL3imwzznNm786JCSJqOCfD/HkDM7Ihf1PZbwg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="zh-cn" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8706-%E5%85%B3%E8%81%94%E5%AE%B9%E5%99%A8mapset%E4%B8%8E%E8%BF%AD%E4%BB%A3%E5%99%A8%E8%BF%9B%E9%98%B6/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    }
+
+</script><style>
+     
+    .header { transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease; }
+</style>
+<script>
+(function() {
+    'use strict';
+
+    
+    var header = document.getElementById('site-header');
+    if (header) {
+        var onScroll = function() {
+            if (window.scrollY > 20) {
+                header.classList.add('header--scrolled');
+            } else {
+                header.classList.remove('header--scrolled');
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function initTocSpy() {
+        var tocNav = document.getElementById('toc-nav');
+        if (!tocNav) return;
+
+        var links = tocNav.querySelectorAll('a[data-heading]');
+        if (links.length === 0) return;
+
+        var headings = [];
+        links.forEach(function(link) {
+            var id = link.getAttribute('data-heading');
+            var heading = document.getElementById(id);
+            if (heading) {
+                headings.push({ el: heading, link: link });
+            }
+        });
+
+        if (headings.length === 0) return;
+
+        var activeLink = null;
+
+        function setActive(link) {
+            if (activeLink === link) return;
+            if (activeLink) activeLink.classList.remove('toc-active');
+            if (link) {
+                link.classList.add('toc-active');
+                
+                var sidebar = document.getElementById('sidebar-toc');
+                if (sidebar) {
+                    var linkRect = link.getBoundingClientRect();
+                    var sidebarRect = sidebar.getBoundingClientRect();
+                    if (linkRect.top < sidebarRect.top + 40 || linkRect.bottom > sidebarRect.bottom - 20) {
+                        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                }
+            }
+            activeLink = link;
+        }
+
+        function onScroll() {
+            var scrollPos = window.scrollY + 100;
+            var current = null;
+
+            for (var i = headings.length - 1; i >= 0; i--) {
+                if (headings[i].el.offsetTop <= scrollPos) {
+                    current = headings[i];
+                    break;
+                }
+            }
+
+            if (current) {
+                setActive(current.link);
+            } else if (headings.length > 0) {
+                setActive(headings[0].link);
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function addCodeLangLabels() {
+        var blocks = document.querySelectorAll('.post-content pre, .md-content .highlight');
+        blocks.forEach(function(block) {
+            if (block.querySelector('.code-lang-label')) return;
+
+            var code = block.querySelector('code');
+            if (!code) return;
+
+            var lang = '';
+            var classes = code.className || '';
+            var match = classes.match(/language-(\w+)/);
+            if (match) {
+                lang = match[1];
+            } else {
+                match = classes.match(/language-(\S+)/);
+                if (match) lang = match[1];
+            }
+
+            if (lang) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = lang;
+                block.style.position = 'relative';
+                block.insertBefore(label, block.firstChild);
+            }
+        });
+    }
+
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initTocSpy();
+            addCodeLangLabels();
+        });
+    } else {
+        initTocSpy();
+        addCodeLangLabels();
+    }
+})();
+</script>
+
+</head>
+<body id="top" translate="no">
+    <header class="header" id="site-header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SciFiReal (Alt + H)">SciFiReal</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <a class="search-trigger" href="http://localhost:1313/search/" title="搜索" accesskey="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+        </a>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="http://localhost:1313/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags/" title="标签墙">
+                    <span>标签墙</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<div class="article-layout">
+  <div class="article-main">
+    <article class="post-single">
+      <header class="post-header">
+        <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">首页</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+        <h1 class="post-title entry-hint-parent">
+          高级篇06-关联容器：map、set与迭代器进阶
+        </h1>
+        <div class="post-meta">
+
+<span title='2026-10-08 20:40:41 +0800 CST'>October 8, 2026</span>&nbsp;·&nbsp;<span>9 min</span>&nbsp;·&nbsp;<span>1850 words</span>&nbsp;·&nbsp;<span>Hi, I&#39;m SciFiReal</span>
+
+</div>
+        <div class="post-header-tags">
+          <a class="tag-pill" href="http://localhost:1313/tags/c&#43;&#43;/">C&#43;&#43;</a>
+        </div>
+      </header> 
+      <div class="post-content md-content"><blockquote>
+<p>上两篇学的vector/list/deque是<strong>序列容器</strong>（Sequence Containers）——元素按插入顺序排列</p>
+<p>STL还提供另一大家族：<strong>关联容器</strong>（Associative Containers）——元素按键（Key）自动排序，通过key快速查找。</p>
+</blockquote>
+<blockquote>
+<p>主要的关联容器：</p>
+</blockquote>
+<ul>
+<li>
+<p><strong>map</strong>：键值对（key-value），key唯一且自动排序</p>
+</li>
+<li>
+<p><strong>set</strong>：只有键（元素本身就是键），无重复</p>
+</li>
+<li>
+<p><strong>multimap</strong>：map的变体，允许重复key</p>
+</li>
+<li>
+<p><strong>multiset</strong>：set的变体，允许重复元素</p>
+</li>
+</ul>
+<blockquote>
+<p>关联容器的底层实现：通常是红黑树，查找/插入/删除都是O(log n)——比vector线性查找O(n)快得多，但比随机访问O(1)慢。</p>
+<p>适用场景：</p>
+<ul>
+<li>需要按键查找（按用户名查找用户数据）</li>
+<li>需要自动排序（元素按key有序存储，遍历就是有序输出）</li>
+<li>不允许重复（set/map）或允许重复（multimap/multiset）</li>
+</ul>
+</blockquote>
+<h2 id="1-map键值对字典">1. map：键值对（字典）<a hidden class="anchor" aria-hidden="true" href="#1-map键值对字典">#</a></h2>
+<p>map存储<code>pair&lt;const Key, Value&gt;</code>，key唯一，自动按key从小到大排序，底层红黑树。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;map&gt;</span><span class="cp">    </span><span class="c1">// map容器头文件
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 设备信息结构体：存储一台设备的信息
+</span></span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">DeviceInfo</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">string</span> <span class="n">name</span><span class="p">;</span>        <span class="c1">// 设备名称
+</span></span></span><span class="line"><span class="cl">    <span class="kt">double</span> <span class="n">temperature</span><span class="p">;</span> <span class="c1">// 温度
+</span></span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="n">isOnline</span><span class="p">;</span>      <span class="c1">// 是否在线
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 构造函数，给成员默认值，方便快速创建对象
+</span></span></span><span class="line"><span class="cl">    <span class="n">DeviceInfo</span><span class="p">(</span><span class="n">string</span> <span class="n">n</span> <span class="o">=</span> <span class="s">&#34;&#34;</span><span class="p">,</span> <span class="kt">double</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">online</span> <span class="o">=</span> <span class="nb">false</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">:</span> <span class="n">name</span><span class="p">(</span><span class="n">n</span><span class="p">),</span> <span class="n">temperature</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">isOnline</span><span class="p">(</span><span class="n">online</span><span class="p">)</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===================== 1. map插入数据 =====================
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// 定义map：key是int设备编号，value是DeviceInfo设备信息
+</span></span></span><span class="line"><span class="cl">    <span class="n">map</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="n">DeviceInfo</span><span class="o">&gt;</span> <span class="n">devices</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 方式1：[] 下标插入
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// ✅ 如果key不存在：新建这条数据
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// ✅ 如果key已经存在：**覆盖旧数据**
+</span></span></span><span class="line"><span class="cl">    <span class="n">devices</span><span class="p">[</span><span class="mi">1001</span><span class="p">]</span> <span class="o">=</span> <span class="n">DeviceInfo</span><span class="p">(</span><span class="s">&#34;加热炉A&#34;</span><span class="p">,</span> <span class="mf">78.5</span><span class="p">,</span> <span class="nb">true</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">devices</span><span class="p">[</span><span class="mi">1002</span><span class="p">]</span> <span class="o">=</span> <span class="n">DeviceInfo</span><span class="p">(</span><span class="s">&#34;冷却塔B&#34;</span><span class="p">,</span> <span class="mf">28.3</span><span class="p">,</span> <span class="nb">true</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">devices</span><span class="p">[</span><span class="mi">2001</span><span class="p">]</span> <span class="o">=</span> <span class="n">DeviceInfo</span><span class="p">(</span><span class="s">&#34;反应釜C&#34;</span><span class="p">,</span> <span class="mf">125.8</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 方式2：insert插入
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// ✅ 如果key不存在：插入成功
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// ✅ 如果key已经存在：**不会覆盖原有数据**（重点！和[]最大区别）
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// insert返回pair：第一个元素是迭代器，第二个bool标记是否插入成功
+</span></span></span><span class="line"><span class="cl">    <span class="n">pair</span><span class="o">&lt;</span><span class="n">map</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="n">DeviceInfo</span><span class="o">&gt;::</span><span class="n">iterator</span><span class="p">,</span> <span class="kt">bool</span><span class="o">&gt;</span> <span class="n">result</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">devices</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">3001</span><span class="p">,</span> <span class="n">DeviceInfo</span><span class="p">(</span><span class="s">&#34;阀门D&#34;</span><span class="p">,</span> <span class="mf">45.2</span><span class="p">,</span> <span class="nb">true</span><span class="p">)));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">second</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;3001插入成功&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;3001已存在，未覆盖&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 重复insert 1001，1001已经存在，插入失败，旧数据保留
+</span></span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">devices</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="mi">1001</span><span class="p">,</span> <span class="n">DeviceInfo</span><span class="p">(</span><span class="s">&#34;XXX&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">false</span><span class="p">)));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;再次insert 1001: &#34;</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">second</span> <span class="o">?</span> <span class="s">&#34;成功&#34;</span> <span class="o">:</span> <span class="s">&#34;失败(已存在)&#34;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===================== 2. 根据key查找数据 =====================
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 按键查找 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 方式1：[]下标访问（坑！）
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// 如果key不存在，[]会**自动插入一条默认构造的空数据**，很多bug来源于此！
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;1001: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">devices</span><span class="p">[</span><span class="mi">1001</span><span class="p">].</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; T=&#34;</span>
+</span></span><span class="line"><span class="cl">         <span class="o">&lt;&lt;</span> <span class="n">devices</span><span class="p">[</span><span class="mi">1001</span><span class="p">].</span><span class="n">temperature</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;度&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 方式2：at() 访问（C++11起，安全）
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// key不存在 → 直接抛出异常 out_of_range，不会偷偷新增元素
+</span></span></span><span class="line"><span class="cl">    <span class="k">try</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;2001: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">devices</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">2001</span><span class="p">).</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;9999: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">devices</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="mi">9999</span><span class="p">).</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span> <span class="c1">// 不存在，触发异常
+</span></span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">catch</span> <span class="p">(</span><span class="k">const</span> <span class="n">out_of_range</span><span class="o">&amp;</span> <span class="n">e</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;at()异常: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">e</span><span class="p">.</span><span class="n">what</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 方式3：find() 查找【工程最推荐写法】
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// 找到：返回指向该元素迭代器；找不到：返回 devices.end()
+</span></span></span><span class="line"><span class="cl">    <span class="n">map</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="n">DeviceInfo</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">devices</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="mi">1002</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">it</span> <span class="o">!=</span> <span class="n">devices</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;find(1002): &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">.</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;find(1002): 未找到&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">it</span> <span class="o">=</span> <span class="n">devices</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="mi">9999</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;find(9999): &#34;</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">it</span> <span class="o">!=</span> <span class="n">devices</span><span class="p">.</span><span class="n">end</span><span class="p">()</span> <span class="o">?</span> <span class="s">&#34;找到&#34;</span> <span class="o">:</span> <span class="s">&#34;未找到&#34;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===================== 3. 遍历map =====================
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 遍历（map自动按key升序排列） ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// map的元素是 pair&lt;key类型, value类型&gt;
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// i-&gt;first 就是key(设备ID)；i-&gt;second 就是value(DeviceInfo对象)
+</span></span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">map</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="n">DeviceInfo</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">i</span> <span class="o">=</span> <span class="n">devices</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">         <span class="n">i</span> <span class="o">!=</span> <span class="n">devices</span><span class="p">.</span><span class="n">end</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">         <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  ID=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span><span class="o">-&gt;</span><span class="n">first</span>
+</span></span><span class="line"><span class="cl">             <span class="o">&lt;&lt;</span> <span class="s">&#34; | &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">.</span><span class="n">name</span>
+</span></span><span class="line"><span class="cl">             <span class="o">&lt;&lt;</span> <span class="s">&#34; T=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">.</span><span class="n">temperature</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;度&#34;</span>
+</span></span><span class="line"><span class="cl">             <span class="o">&lt;&lt;</span> <span class="s">&#34; (&#34;</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">i</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">.</span><span class="n">isOnline</span> <span class="o">?</span> <span class="s">&#34;在线&#34;</span> <span class="o">:</span> <span class="s">&#34;离线&#34;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;)&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">  	<span class="cm">/* C++17适用auto简洁迭代器的写法
+</span></span></span><span class="line"><span class="cl"><span class="cm">  	for (auto &amp;i : devices)
+</span></span></span><span class="line"><span class="cl"><span class="cm">		{
+</span></span></span><span class="line"><span class="cl"><span class="cm">    		cout &lt;&lt; &#34;ID=&#34; &lt;&lt; i.first &lt;&lt; &#34; name=&#34; &lt;&lt; i.second.name &lt;&lt; endl;
+</span></span></span><span class="line"><span class="cl"><span class="cm">		}
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">  	*/</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===================== 4. 删除元素 =====================
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 删除 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// erase(键值)：按key删除，返回删除成功的个数（map的key唯一，返回0或1）
+</span></span></span><span class="line"><span class="cl">    <span class="n">size_t</span> <span class="n">removed</span> <span class="o">=</span> <span class="n">devices</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="mi">1002</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;erase(1002): 删除了 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">removed</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 个元素&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// erase(迭代器)：按迭代器删除，找到元素再删，更高效
+</span></span></span><span class="line"><span class="cl">    <span class="n">it</span> <span class="o">=</span> <span class="n">devices</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="mi">3001</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">it</span> <span class="o">!=</span> <span class="n">devices</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">devices</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">it</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;erase(迭代器): 删除3001&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;删除后剩 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">devices</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 台设备:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">map</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="n">DeviceInfo</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">i</span> <span class="o">=</span> <span class="n">devices</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">         <span class="n">i</span> <span class="o">!=</span> <span class="n">devices</span><span class="p">.</span><span class="n">end</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">         <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span><span class="o">-&gt;</span><span class="n">first</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; - &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">.</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===================== 5. 常用辅助接口 =====================
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">设备总数: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">devices</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;是否为空: &#34;</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">devices</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span> <span class="o">?</span> <span class="s">&#34;是&#34;</span> <span class="o">:</span> <span class="s">&#34;否&#34;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// count(key)：统计key存在数量。map中key唯一，返回只能是0或者1
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;1001是否存在: &#34;</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">devices</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="mi">1001</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="s">&#34;是&#34;</span> <span class="o">:</span> <span class="s">&#34;否&#34;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;9999是否存在: &#34;</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">devices</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="mi">9999</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="s">&#34;是&#34;</span> <span class="o">:</span> <span class="s">&#34;否&#34;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出结果：</p>
+<pre tabindex="0"><code>3001插入成功
+再次insert 1001: 失败(已存在)
+
+=== 按键查找 ===
+1001: 加热炉A T=78.5度
+2001: 反应釜C
+at()异常: invalid map&lt;K, T&gt; key
+find(1002): 冷却塔B
+find(9999): 未找到
+
+=== 遍历（map自动按key升序排列） ===
+  ID=1001 | 加热炉A T=78.5度 (在线)
+  ID=1002 | 冷却塔B T=28.3度 (在线)
+  ID=2001 | 反应釜C T=125.8度 (离线)
+  ID=3001 | 阀门D T=45.2度 (在线)
+
+=== 删除 ===
+erase(1002): 删除了 1 个元素
+erase(迭代器): 删除3001
+删除后剩 2 台设备:
+  1001 - 加热炉A
+  2001 - 反应釜C
+
+设备总数: 2
+是否为空: 否
+1001是否存在: 是
+9999是否存在: 否
+</code></pre><hr>
+<h2 id="2-set集合只有键">2. set：集合（只有键）<a hidden class="anchor" aria-hidden="true" href="#2-set集合只有键">#</a></h2>
+<p>set存储单一值，元素自动排序且不重复，底层红黑树，复杂度O(log n)。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;set&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;algorithm&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 1. set 基本插入 =====
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// set：元素唯一，自动升序排序，底层红黑树
+</span></span></span><span class="line"><span class="cl">    <span class="n">set</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">ids</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ids</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">1001</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ids</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">1002</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ids</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">1003</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ids</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">1001</span><span class="p">);</span> <span class="c1">// 元素重复，自动忽略，不会报错
+</span></span></span><span class="line"><span class="cl">    <span class="n">ids</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">2001</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;set大小: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">ids</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;元素（自动升序）: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 迭代器遍历，*it 取出迭代器指向的元素
+</span></span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">set</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">ids</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">ids</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">it</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 2. set 查找 =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 查找 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">set</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">found</span> <span class="o">=</span> <span class="n">ids</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="mi">1002</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">found</span> <span class="o">!=</span> <span class="n">ids</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;1002 存在&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// count：存在返回1，不存在返回0（set元素唯一）
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;9999 存在吗: &#34;</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">ids</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="mi">9999</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="s">&#34;是&#34;</span> <span class="o">:</span> <span class="s">&#34;否&#34;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 3. set经典用途：vector去重 =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== set去重应用 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">raw</span> <span class="o">=</span> <span class="p">{</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;原始vector: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">raw</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">raw</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 直接用vector首尾迭代器构造set，自动完成【去重+排序】
+</span></span></span><span class="line"><span class="cl">    <span class="n">set</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">uniqueNums</span><span class="p">(</span><span class="n">raw</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">raw</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;set后: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">set</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">uniqueNums</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">uniqueNums</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">it</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; (去重后 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">uniqueNums</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 个元素)&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 4. 存储字符串set =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== string set ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;</span> <span class="n">deviceNames</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">deviceNames</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="s">&#34;加热炉A&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">deviceNames</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="s">&#34;冷却塔B&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">deviceNames</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="s">&#34;反应釜C&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">deviceNames</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="s">&#34;加热炉A&#34;</span><span class="p">);</span> <span class="c1">// 重复字符串直接忽略
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;设备名称（按字典序自动排序）:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">set</span><span class="o">&lt;</span><span class="n">string</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">deviceNames</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">deviceNames</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  &#34;</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">it</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 5. 修改排序规则：降序set =====
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// 默认 set&lt;int&gt; 等价 set&lt;int, less&lt;int&gt;&gt; 升序
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// greater&lt;int&gt; 指定比较规则，变成从大到小
+</span></span></span><span class="line"><span class="cl">    <span class="n">set</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="n">greater</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">descNums</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">descNums</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">descNums</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">descNums</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">20</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">descNums</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">15</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">降序set: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">set</span><span class="o">&lt;</span><span class="kt">int</span><span class="p">,</span> <span class="n">greater</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">descNums</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">descNums</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">it</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出结果：</p>
+<pre tabindex="0"><code>set大小: 4
+元素（自动升序）: 1001 1002 1003 2001
+
+=== 查找 ===
+1002 存在
+9999 存在吗: 否
+
+=== set去重应用 ===
+原始vector: 5 3 8 1 5 3 9 1 2 5 8
+set后: 1 2 3 5 8 9  (去重后 6 个元素)
+
+=== string set ===
+设备名称（按字典序自动排序）:
+  反应釜C
+  加热炉A
+  冷却塔B
+
+降序set: 20 15 10 5
+</code></pre><hr>
+<h2 id="3-multimapmultiset允许重复键">3. multimap/multiset：允许重复键<a hidden class="anchor" aria-hidden="true" href="#3-multimapmultiset允许重复键">#</a></h2>
+<p>multimap与map的唯一区别是key可以重复，其它都一样。multiset与set的唯一区别是元素可以重复。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;map&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;set&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== multimap：允许同一个key对应多个value =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;=== multimap ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// key：设备名称，value：温度读数。一个设备可以有多条温度记录
+</span></span></span><span class="line"><span class="cl">    <span class="n">multimap</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span> <span class="n">deviceReadings</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 同一个key可以多次插入，全部保留（map不允许重复key）
+</span></span></span><span class="line"><span class="cl">    <span class="n">deviceReadings</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;加热炉A&#34;</span><span class="p">,</span> <span class="mi">75</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">deviceReadings</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;加热炉A&#34;</span><span class="p">,</span> <span class="mi">78</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">deviceReadings</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;加热炉A&#34;</span><span class="p">,</span> <span class="mi">82</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">deviceReadings</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;冷却塔B&#34;</span><span class="p">,</span> <span class="mi">28</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">deviceReadings</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;冷却塔B&#34;</span><span class="p">,</span> <span class="mi">29</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">deviceReadings</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;反应釜C&#34;</span><span class="p">,</span> <span class="mi">120</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;共 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">deviceReadings</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 条读数&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;加热炉A的读数数量: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">deviceReadings</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="s">&#34;加热炉A&#34;</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// equal_range：获取这个key对应的【起始迭代器，结束迭代器】区间
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">加热炉A的所有读数:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">pair</span><span class="o">&lt;</span><span class="n">multimap</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;::</span><span class="n">iterator</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="n">multimap</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;::</span><span class="n">iterator</span><span class="o">&gt;</span> <span class="n">range</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">range</span> <span class="o">=</span> <span class="n">deviceReadings</span><span class="p">.</span><span class="n">equal_range</span><span class="p">(</span><span class="s">&#34;加热炉A&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 遍历区间内所有同key数据
+</span></span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">multimap</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">range</span><span class="p">.</span><span class="n">first</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">it</span> <span class="o">!=</span> <span class="n">range</span><span class="p">.</span><span class="n">second</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">first</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; -&gt; &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">second</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;度&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== multiset：允许存储重复元素，自动升序 =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== multiset ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">multiset</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">readings</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">readings</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">75</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">readings</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">80</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">readings</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">75</span><span class="p">);</span> <span class="c1">// multiset允许重复元素，可以插入成功
+</span></span></span><span class="line"><span class="cl">    <span class="n">readings</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">85</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">readings</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">75</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;共 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">readings</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 个读数&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;75出现的次数: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">readings</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="mi">75</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;全部读数（自动排序）: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">multiset</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">readings</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">it</span> <span class="o">!=</span> <span class="n">readings</span><span class="p">.</span><span class="n">end</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">it</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ⚠️重点：erase(值)，会删除容器里**所有等于该值**的元素
+</span></span></span><span class="line"><span class="cl">    <span class="n">readings</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="mi">75</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;erase(75)后剩 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">readings</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 个:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">multiset</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">readings</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="n">it</span> <span class="o">!=</span> <span class="n">readings</span><span class="p">.</span><span class="n">end</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">it</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出结果：</p>
+<pre tabindex="0"><code>=== multimap ===
+共 6 条读数
+加热炉A的读数数量: 3
+
+加热炉A的所有读数:
+  加热炉A -&gt; 75度
+  加热炉A -&gt; 78度
+  加热炉A -&gt; 82度
+
+=== multiset ===
+共 5 个读数
+75出现的次数: 3
+全部读数（自动排序）: 75 75 75 80 85
+erase(75)后剩 2 个:
+80 85
+</code></pre><hr>
+<h2 id="4-map自定义key类型">4. map自定义key类型<a hidden class="anchor" aria-hidden="true" href="#4-map自定义key类型">#</a></h2>
+<p>自定义类型作为map的key时，必须定义<strong>比较运算符</strong>（<code>operator&lt;</code>）。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;map&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 复合键：车间+工位，作为map的key
+</span></span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">Location</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">building</span><span class="p">;</span>   <span class="c1">// 车间号
+</span></span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">station</span><span class="p">;</span>    <span class="c1">// 工位号
+</span></span></span><span class="line"><span class="cl">    <span class="n">string</span> <span class="n">name</span><span class="p">;</span>    <span class="c1">// 位置名称
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Location</span><span class="p">(</span><span class="kt">int</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="kt">int</span> <span class="n">s</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">string</span> <span class="n">n</span> <span class="o">=</span> <span class="s">&#34;&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">:</span> <span class="n">building</span><span class="p">(</span><span class="n">b</span><span class="p">),</span> <span class="n">station</span><span class="p">(</span><span class="n">s</span><span class="p">),</span> <span class="n">name</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ✅ 必须重载 &lt; 运算符，map底层红黑树需要用它做排序、判断key相等
+</span></span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="k">operator</span><span class="o">&lt;</span><span class="p">(</span><span class="k">const</span> <span class="n">Location</span><span class="o">&amp;</span> <span class="n">other</span><span class="p">)</span> <span class="k">const</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 先比较车间；车间相同再比较工位
+</span></span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">building</span> <span class="o">!=</span> <span class="n">other</span><span class="p">.</span><span class="n">building</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">building</span> <span class="o">&lt;</span> <span class="n">other</span><span class="p">.</span><span class="n">building</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">station</span> <span class="o">&lt;</span> <span class="n">other</span><span class="p">.</span><span class="n">station</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// key是自定义结构体Location，value是温度
+</span></span></span><span class="line"><span class="cl">    <span class="n">map</span><span class="o">&lt;</span><span class="n">Location</span><span class="p">,</span> <span class="kt">double</span><span class="o">&gt;</span> <span class="n">locationTemp</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">locationTemp</span><span class="p">[</span><span class="n">Location</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#34;1车间1号工位&#34;</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">45.2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">locationTemp</span><span class="p">[</span><span class="n">Location</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#34;1车间2号工位&#34;</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">48.5</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">locationTemp</span><span class="p">[</span><span class="n">Location</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#34;2车间1号工位&#34;</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">35.8</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 【重点】比较规则只看building、station，name不参与比较
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// 下面这个Location(1,1,&#34;重复的&#34;) 和前面(1,1,&#34;1车间1号工位&#34;)判定为同一个key，覆盖旧值
+</span></span></span><span class="line"><span class="cl">    <span class="n">locationTemp</span><span class="p">[</span><span class="n">Location</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#34;重复的&#34;</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">99.9</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;位置温度（按车间号+工位号排序）:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">map</span><span class="o">&lt;</span><span class="n">Location</span><span class="p">,</span> <span class="kt">double</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">locationTemp</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">         <span class="n">it</span> <span class="o">!=</span> <span class="n">locationTemp</span><span class="p">.</span><span class="n">end</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">         <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  车间&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">first</span><span class="p">.</span><span class="n">building</span>
+</span></span><span class="line"><span class="cl">             <span class="o">&lt;&lt;</span> <span class="s">&#34;-工位&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">first</span><span class="p">.</span><span class="n">station</span>
+</span></span><span class="line"><span class="cl">             <span class="o">&lt;&lt;</span> <span class="s">&#34; (&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">first</span><span class="p">.</span><span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;): &#34;</span>
+</span></span><span class="line"><span class="cl">             <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">second</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;度&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 查找：只要参与比较的字段(building,station)一致，就能找到，name随便填
+</span></span></span><span class="line"><span class="cl">    <span class="n">Location</span> <span class="n">key</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#34;&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">map</span><span class="o">&lt;</span><span class="n">Location</span><span class="p">,</span> <span class="kt">double</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">found</span> <span class="o">=</span> <span class="n">locationTemp</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">found</span> <span class="o">!=</span> <span class="n">locationTemp</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">查找到 (1,2): &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">found</span><span class="o">-&gt;</span><span class="n">second</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;度&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出结果：</p>
+<pre tabindex="0"><code>位置温度（按车间号+工位号排序）:
+  车间1-工位1 (1车间1号工位): 99.9度
+  车间1-工位2 (1车间2号工位): 48.5度
+  车间2-工位1 (2车间1号工位): 35.8度
+
+查找到 (1,2): 48.5度
+</code></pre><hr>
+<h2 id="5-迭代器进阶类型失效规则auto">5. 迭代器进阶：类型、失效规则、auto<a hidden class="anchor" aria-hidden="true" href="#5-迭代器进阶类型失效规则auto">#</a></h2>
+<h3 id="51-基础语法">5.1 基础语法<a hidden class="anchor" aria-hidden="true" href="#51-基础语法">#</a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;map&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 1. 迭代器的3种常用类型 =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;=== 迭代器类型 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="mi">5</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">v</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">10</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 普通迭代器 iterator：可读、可修改容器元素
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;普通迭代器: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="o">*</span><span class="n">it</span> <span class="o">=</span> <span class="o">*</span><span class="n">it</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// 允许修改元素
+</span></span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">it</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// const_iterator 常量迭代器：只读，不能修改元素
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;const_iterator: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">const_iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// *it = 100; // 编译报错！只读，禁止写
+</span></span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">it</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// reverse_iterator 反向迭代器：从末尾向前遍历
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;反向迭代器: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">reverse_iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">rbegin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">v</span><span class="p">.</span><span class="n">rend</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="o">*</span><span class="n">it</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 2. C++11 auto：自动推导迭代器类型，简化代码 =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== auto简化迭代器 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">map</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;</span> <span class="n">stats</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">stats</span><span class="p">[</span><span class="s">&#34;正常&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">85</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">stats</span><span class="p">[</span><span class="s">&#34;警告&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">stats</span><span class="p">[</span><span class="s">&#34;报警&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// auto自动识别迭代器类型，不用手写很长的类型名
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;auto遍历map: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">stats</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">stats</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">first</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">second</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 3. 迭代器失效（面试重点！） =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 迭代器失效演示 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;vector迭代器失效规则：&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  插入/删除：被操作位置之后的迭代器可能失效；&#34;</span>
+</span></span><span class="line"><span class="cl">            <span class="s">&#34;扩容重新分配内存时，全部迭代器失效。&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  erase(it)会返回下一个有效的迭代器，安全删除要用返回值</span><span class="se">\n</span><span class="s">&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;删除所有偶数前: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;::</span><span class="n">iterator</span> <span class="n">it</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">(</span><span class="n">it</span> <span class="o">!=</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="o">*</span><span class="n">it</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">it</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">it</span><span class="p">);</span> <span class="c1">// erase返回下一个有效迭代器，接收返回值防止失效
+</span></span></span><span class="line"><span class="cl">        <span class="k">else</span>
+</span></span><span class="line"><span class="cl">            <span class="o">++</span><span class="n">it</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;删除偶数后: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">map/set（红黑树容器）迭代器失效规则：&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  插入：不会让任何迭代器失效；&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  删除：仅被删掉元素的迭代器失效，其余迭代器保持有效</span><span class="se">\n</span><span class="s">&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// map安全删除示例
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;map安全删除（删除value&gt;10的条目）:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">auto</span> <span class="n">mit</span> <span class="o">=</span> <span class="n">stats</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">(</span><span class="n">mit</span> <span class="o">!=</span> <span class="n">stats</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">mit</span><span class="o">-&gt;</span><span class="n">second</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">mit</span> <span class="o">=</span> <span class="n">stats</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">mit</span><span class="p">);</span> <span class="c1">// C++11后erase返回下一个迭代器
+</span></span></span><span class="line"><span class="cl">        <span class="k">else</span>
+</span></span><span class="line"><span class="cl">            <span class="o">++</span><span class="n">mit</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">stats</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="n">it</span> <span class="o">!=</span> <span class="n">stats</span><span class="p">.</span><span class="n">end</span><span class="p">();</span> <span class="o">++</span><span class="n">it</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">first</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">second</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出结果：</p>
+<pre tabindex="0"><code>=== 迭代器类型 ===
+普通迭代器: 11 21 31 41 51
+const_iterator: 11 21 31 41 51
+反向迭代器: 51 41 31 21 11
+
+=== auto简化迭代器 ===
+auto遍历map: 报警=5 警告=10 正常=85
+
+=== 迭代器失效演示 ===
+vector迭代器失效规则：
+  插入/删除：被操作位置之后的迭代器可能失效；扩容重新分配内存时，全部迭代器失效。
+  erase(it)会返回下一个有效的迭代器，安全删除要用返回值
+
+删除所有偶数前: 11 21 31 41 51
+删除偶数后: 11 21 31 41 51
+
+map/set（红黑树容器）迭代器失效规则：
+  插入：不会让任何迭代器失效；
+  删除：仅被删掉元素的迭代器失效，其余迭代器保持有效
+
+map安全删除（删除value&gt;10的条目）:
+  报警=5
+  警告=10
+</code></pre><h3 id="52-面试重点迭代器失效高频面试考点">5.2 面试重点：迭代器失效【高频面试考点】<a hidden class="anchor" aria-hidden="true" href="#52-面试重点迭代器失效高频面试考点">#</a></h3>
+<blockquote>
+<ol>
+<li>vector（连续数组内存）：</li>
+</ol>
+</blockquote>
+<ul>
+<li>
+<p>插入元素：如果触发扩容，<strong>全部迭代器失效</strong>；不扩容，插入点后面迭代器失效；</p>
+</li>
+<li>
+<p>删除元素：删除点之后所有迭代器失效；只有【被删除位置之后】的迭代器失效，删除位置之前的迭代器仍然有效；“删除点及之后的迭代器全部失效” 指的是：原来旧的那些迭代器（删除操作之前保存的迭代器）全部作废。<code>erase</code> 的返回值，是一个全新的，有指向被删元素下一个元素的有效迭代器，因此可以接着循环遍历vector<int> v。</p>
+</li>
+<li>
+<p>安全写法：<code>it = v.erase(it);</code> 接收 erase 返回的新迭代器</p>
+</li>
+</ul>
+<blockquote>
+<p>如何理解删除元素呢？</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v</span> <span class="o">=</span> <span class="p">{</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">50</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// it_old 指向 20
+</span></span></span><span class="line"><span class="cl"><span class="k">auto</span> <span class="n">it_old</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">auto</span> <span class="n">it_front</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span> <span class="c1">// 指向10（删除点前面）
+</span></span></span><span class="line"><span class="cl"><span class="k">auto</span> <span class="n">it_back</span>  <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">()</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span> <span class="c1">// 指向30（删除点后面）
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">v</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">it_old</span><span class="p">);</span>
+</span></span></code></pre></div><p>执行 erase 之后：</p>
+<ol>
+<li>
+<p>数组变成 <code>{10,30,40,50}</code>，元素整体往前挪一格；</p>
+</li>
+<li>
+<p><code>it_front</code>（指向 10）：<strong>仍然有效</strong>（删除点前面，不受影响）；</p>
+</li>
+<li>
+<p><code>it_old</code>（原来指向 20）：<strong>失效，不能再用</strong></p>
+</li>
+<li>
+<p><code>it_back</code>（原来指向 30）：<strong>旧迭代器失效！</strong></p>
+</li>
+<li>
+<p><code>auto it_new = v.erase(it_old);</code></p>
+<blockquote>
+<p><code>it_new</code> 是 erase<strong>新构造出来</strong>的迭代器，指向新数组里的 30，<strong>这个新迭代器是合法可用的</strong></p>
+</blockquote>
+</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>map /set/multimap /multiset（红黑树）</li>
+</ol>
+</blockquote>
+<ul>
+<li>插入：<strong>所有迭代器都不失效</strong></li>
+<li>删除：<strong>只有被删除的那个迭代器失效，其它迭代器完好</strong></li>
+<li>同样推荐接收 erase 返回值，代码统一规范</li>
+</ul>
+<p>vector：内存连续，增删容易导致迭代器大面积失效。</p>
+<p>map/set：节点分散挂在树上，只有被删除节点的迭代器失效。</p>
+
+
+      </div>
+
+      <footer class="post-footer">
+          <nav class="series-nav">
+            <div class="series-nav-label">
+              <span>Posts 系列</span>
+              <span>30 篇</span>
+            </div>
+            <div class="series-nav-links">
+              <a class="series-nav-prev" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8705-tl%E7%AE%97%E6%B3%95sortfindaccumulate%E4%B8%8E%E9%81%8D%E5%8E%86/">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                <div>
+                  <span class="series-nav-dir">上一篇</span>
+                  <span class="series-nav-title">高级篇05-STL算法：sort、find、accumulate与遍历</span>
+                </div>
+              </a>
+            </div>
+          </nav>
+      </footer>
+    </article>
+  </div>
+
+  <aside class="article-sidebar"><div class="sidebar-toc" id="sidebar-toc">
+      <div class="toc-title">目录</div>
+      <nav id="toc-nav">
+        <ul><li class="toc-h2">
+            <a href="#1-map%e9%94%ae%e5%80%bc%e5%af%b9%e5%ad%97%e5%85%b8" data-heading="1-map键值对字典">1. map：键值对（字典）</a>
+          </li><li class="toc-h2">
+            <a href="#2-set%e9%9b%86%e5%90%88%e5%8f%aa%e6%9c%89%e9%94%ae" data-heading="2-set集合只有键">2. set：集合（只有键）</a>
+          </li><li class="toc-h2">
+            <a href="#3-multimapmultiset%e5%85%81%e8%ae%b8%e9%87%8d%e5%a4%8d%e9%94%ae" data-heading="3-multimapmultiset允许重复键">3. multimap/multiset：允许重复键</a>
+          </li><li class="toc-h2">
+            <a href="#4-map%e8%87%aa%e5%ae%9a%e4%b9%89key%e7%b1%bb%e5%9e%8b" data-heading="4-map自定义key类型">4. map自定义key类型</a>
+          </li><li class="toc-h2">
+            <a href="#5-%e8%bf%ad%e4%bb%a3%e5%99%a8%e8%bf%9b%e9%98%b6%e7%b1%bb%e5%9e%8b%e5%a4%b1%e6%95%88%e8%a7%84%e5%88%99auto" data-heading="5-迭代器进阶类型失效规则auto">5. 迭代器进阶：类型、失效规则、auto</a>
+          </li><li class="toc-h3">
+            <a href="#51-%e5%9f%ba%e7%a1%80%e8%af%ad%e6%b3%95" data-heading="51-基础语法">5.1 基础语法</a>
+          </li><li class="toc-h3">
+            <a href="#52-%e9%9d%a2%e8%af%95%e9%87%8d%e7%82%b9%e8%bf%ad%e4%bb%a3%e5%99%a8%e5%a4%b1%e6%95%88%e9%ab%98%e9%a2%91%e9%9d%a2%e8%af%95%e8%80%83%e7%82%b9" data-heading="52-面试重点迭代器失效高频面试考点">5.2 面试重点：迭代器失效【高频面试考点】</a>
+          </li></ul>
+      </nav>
+    </div></aside>
+</div>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">SciFiReal</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
