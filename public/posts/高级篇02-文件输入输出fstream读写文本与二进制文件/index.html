@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="auto" data-theme="light" translate="no">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>高级篇02-文件输入输出：fstream读写文本与二进制文件 | SciFiReal</title>
+<meta name="keywords" content="C&#43;&#43;">
+<meta name="description" content="高级篇02-文件输入输出：fstream读写文本与二进制文件">
+<meta name="author" content="Hi, I&#39;m SciFiReal">
+<link rel="canonical" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8702-%E6%96%87%E4%BB%B6%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BAfstream%E8%AF%BB%E5%86%99%E6%96%87%E6%9C%AC%E4%B8%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.341560dc62f78a6c33ce7366efce8909226a3827c3fc790333b2217f53d96f08.css" integrity="sha256-NBVg3GL3imwzznNm786JCSJqOCfD/HkDM7Ihf1PZbwg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="zh-cn" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8702-%E6%96%87%E4%BB%B6%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BAfstream%E8%AF%BB%E5%86%99%E6%96%87%E6%9C%AC%E4%B8%8E%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%96%87%E4%BB%B6/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    }
+
+</script><style>
+     
+    .header { transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease; }
+</style>
+<script>
+(function() {
+    'use strict';
+
+    
+    var header = document.getElementById('site-header');
+    if (header) {
+        var onScroll = function() {
+            if (window.scrollY > 20) {
+                header.classList.add('header--scrolled');
+            } else {
+                header.classList.remove('header--scrolled');
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function initTocSpy() {
+        var tocNav = document.getElementById('toc-nav');
+        if (!tocNav) return;
+
+        var links = tocNav.querySelectorAll('a[data-heading]');
+        if (links.length === 0) return;
+
+        var headings = [];
+        links.forEach(function(link) {
+            var id = link.getAttribute('data-heading');
+            var heading = document.getElementById(id);
+            if (heading) {
+                headings.push({ el: heading, link: link });
+            }
+        });
+
+        if (headings.length === 0) return;
+
+        var activeLink = null;
+
+        function setActive(link) {
+            if (activeLink === link) return;
+            if (activeLink) activeLink.classList.remove('toc-active');
+            if (link) {
+                link.classList.add('toc-active');
+                
+                var sidebar = document.getElementById('sidebar-toc');
+                if (sidebar) {
+                    var linkRect = link.getBoundingClientRect();
+                    var sidebarRect = sidebar.getBoundingClientRect();
+                    if (linkRect.top < sidebarRect.top + 40 || linkRect.bottom > sidebarRect.bottom - 20) {
+                        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                }
+            }
+            activeLink = link;
+        }
+
+        function onScroll() {
+            var scrollPos = window.scrollY + 100;
+            var current = null;
+
+            for (var i = headings.length - 1; i >= 0; i--) {
+                if (headings[i].el.offsetTop <= scrollPos) {
+                    current = headings[i];
+                    break;
+                }
+            }
+
+            if (current) {
+                setActive(current.link);
+            } else if (headings.length > 0) {
+                setActive(headings[0].link);
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function addCodeLangLabels() {
+        var blocks = document.querySelectorAll('.post-content pre, .md-content .highlight');
+        blocks.forEach(function(block) {
+            if (block.querySelector('.code-lang-label')) return;
+
+            var code = block.querySelector('code');
+            if (!code) return;
+
+            var lang = '';
+            var classes = code.className || '';
+            var match = classes.match(/language-(\w+)/);
+            if (match) {
+                lang = match[1];
+            } else {
+                match = classes.match(/language-(\S+)/);
+                if (match) lang = match[1];
+            }
+
+            if (lang) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = lang;
+                block.style.position = 'relative';
+                block.insertBefore(label, block.firstChild);
+            }
+        });
+    }
+
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initTocSpy();
+            addCodeLangLabels();
+        });
+    } else {
+        initTocSpy();
+        addCodeLangLabels();
+    }
+})();
+</script>
+
+</head>
+<body id="top" translate="no">
+    <header class="header" id="site-header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SciFiReal (Alt + H)">SciFiReal</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <a class="search-trigger" href="http://localhost:1313/search/" title="搜索" accesskey="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+        </a>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="http://localhost:1313/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags/" title="标签墙">
+                    <span>标签墙</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<div class="article-layout">
+  <div class="article-main">
+    <article class="post-single">
+      <header class="post-header">
+        <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">首页</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+        <h1 class="post-title entry-hint-parent">
+          高级篇02-文件输入输出：fstream读写文本与二进制文件
+        </h1>
+        <div class="post-meta">
+
+<span title='2026-10-07 09:44:21 +0800 CST'>October 7, 2026</span>&nbsp;·&nbsp;<span>5 min</span>&nbsp;·&nbsp;<span>946 words</span>&nbsp;·&nbsp;<span>Hi, I&#39;m SciFiReal</span>
+
+</div>
+        <div class="post-header-tags">
+          <a class="tag-pill" href="http://localhost:1313/tags/c&#43;&#43;/">C&#43;&#43;</a>
+        </div>
+      </header> 
+      <div class="post-content md-content"><blockquote>
+<p>C++文件IO的核心类：</p>
+<ul>
+<li><strong>ofstream</strong>：Output File Stream，写文件（输出到文件）</li>
+<li><strong>ifstream</strong>：Input File Stream，读文件（从文件输入）</li>
+<li><strong>fstream</strong>：File Stream，可同时读写</li>
+</ul>
+<p>它们都继承自<code>iostream</code>类家族，所以用法和cin/cout几乎一样——<code>&lt;&lt;</code> 写、<code>&gt;&gt;</code> 读、<code>getline</code> 读一行等。</p>
+<p>文件IO的两个主要场景：</p>
+<ol>
+<li><strong>文本文件</strong>：人可读的格式。每行是一条记录，字段用分隔符分开。如配置文件、CSV、日志</li>
+<li><strong>二进制文件</strong>：机器可读的格式。直接读写内存中的字节表示，不做任何格式转换。如工业数据记录、图片、压缩文件</li>
+</ol>
+</blockquote>
+<hr>
+<h2 id="1-写文本文件ofstream">1. 写文本文件：ofstream<a hidden class="anchor" aria-hidden="true" href="#1-写文本文件ofstream">#</a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;fstream&gt;</span><span class="cp">   </span><span class="c1">// 文件读写头文件
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 1. 创建文件写入流对象，打开文件
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// 默认模式：不存在则创建，存在则清空内容后写入
+</span></span></span><span class="line"><span class="cl">    <span class="n">ofstream</span> <span class="n">outFile</span><span class="p">(</span><span class="s">&#34;sensor_data.txt&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 2. 必须判断文件是否打开成功（路径错误/权限不足会打开失败）
+</span></span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">outFile</span><span class="p">.</span><span class="n">is_open</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;无法打开文件进行写入！&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 3. 写入CSV表头与固定传感器数据
+</span></span></span><span class="line"><span class="cl">    <span class="n">outFile</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;设备ID,名称,温度,时间&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">outFile</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;1001,加热炉A,78.5,2024-01-01 08:00:00&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">outFile</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;1002,冷却塔B,28.3,2024-01-01 08:00:01&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">outFile</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;2001,反应釜C,125.8,2024-01-01 08:00:02&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 4. 通过变量动态写入数据
+</span></span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">deviceId</span> <span class="o">=</span> <span class="mi">3001</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">name</span> <span class="o">=</span> <span class="s">&#34;阀门D&#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">double</span> <span class="n">temperature</span> <span class="o">=</span> <span class="mf">45.2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">outFile</span> <span class="o">&lt;&lt;</span> <span class="n">deviceId</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;,&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;,&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">temperature</span>
+</span></span><span class="line"><span class="cl">            <span class="o">&lt;&lt;</span> <span class="s">&#34;,2024-01-01 08:00:03&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 5. 关闭文件（RAII机制会自动关闭，显式关闭更规范清晰）
+</span></span></span><span class="line"><span class="cl">    <span class="n">outFile</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;传感器数据写入成功！&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p>打开模式标记</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">ofstream</span> <span class="nf">f1</span><span class="p">(</span><span class="s">&#34;log.txt&#34;</span><span class="p">,</span> <span class="n">ios</span><span class="o">::</span><span class="n">app</span><span class="p">);</span>         <span class="c1">// 追加写日志
+</span></span></span><span class="line"><span class="cl"><span class="n">ofstream</span> <span class="nf">f2</span><span class="p">(</span><span class="s">&#34;data.bin&#34;</span><span class="p">,</span> <span class="n">ios</span><span class="o">::</span><span class="n">binary</span><span class="p">);</span>     <span class="c1">// 二进制写入
+</span></span></span><span class="line"><span class="cl"><span class="n">ifstream</span> <span class="nf">f3</span><span class="p">(</span><span class="s">&#34;config.txt&#34;</span><span class="p">,</span> <span class="n">ios</span><span class="o">::</span><span class="n">in</span><span class="p">);</span>       <span class="c1">// 只读（默认）
+</span></span></span><span class="line"><span class="cl"><span class="n">fstream</span> <span class="nf">f4</span><span class="p">(</span><span class="s">&#34;data.dat&#34;</span><span class="p">,</span> <span class="n">ios</span><span class="o">::</span><span class="n">in</span> <span class="o">|</span> <span class="n">ios</span><span class="o">::</span><span class="n">out</span> <span class="o">|</span> <span class="n">ios</span><span class="o">::</span><span class="n">binary</span><span class="p">);</span> <span class="c1">// 读写二进制
+</span></span></span></code></pre></div><p><code>ios::xxx</code> 是<strong>打开文件的模式标记</strong>，用 <code>|</code> 按位或来<strong>组合多个模式</strong></p>
+<blockquote>
+<p>常见的模式标记：</p>
+</blockquote>
+<ul>
+<li>
+<p><code>ios::out</code>：打开用于写入（默认，会清空已有内容）</p>
+</li>
+<li>
+<p><code>ios::in</code>：打开用于读取</p>
+</li>
+<li>
+<p><code>ios::app</code>：追加模式（Append），写在文件末尾</p>
+</li>
+<li>
+<p><code>ios::trunc</code>：如果文件存在，截断为0字节（默认行为）</p>
+</li>
+<li>
+<p><code>ios::binary</code>：二进制模式（不做换行符转换）</p>
+</li>
+<li>
+<p><code>ios::ate</code>：打开后定位到文件末尾（At End）</p>
+</li>
+</ul>
+<hr>
+<h2 id="2-读文本文件ifstream">2. 读文本文件：ifstream<a hidden class="anchor" aria-hidden="true" href="#2-读文本文件ifstream">#</a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;fstream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">   </span><span class="c1">// std::string、getline
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 1. 打开文件用于读取
+</span></span></span><span class="line"><span class="cl">    <span class="n">ifstream</span> <span class="n">inFile</span><span class="p">(</span><span class="s">&#34;sensor_data.txt&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">inFile</span><span class="p">.</span><span class="n">is_open</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;无法打开文件读取!&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 方法1：按行读取（适合文本、日志，一次性读整行） =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;===== 方法1：按行读取 =====&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">string</span> <span class="n">line</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">lineNum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">(</span><span class="n">getline</span><span class="p">(</span><span class="n">inFile</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span> <span class="c1">// 循环读一行，读到文件末尾EOF终止
+</span></span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">lineNum</span><span class="o">++</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;第&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">lineNum</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;行: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">line</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 读完到末尾，流状态是eof，需要清空标志 + 移动读取指针，才能重新读
+</span></span></span><span class="line"><span class="cl">    <span class="n">inFile</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>                <span class="c1">// 清除eof错误标记
+</span></span></span><span class="line"><span class="cl">    <span class="n">inFile</span><span class="p">.</span><span class="n">seekg</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ios</span><span class="o">::</span><span class="n">beg</span><span class="p">);</span>     <span class="c1">// 读取指针移回文件开头
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 方法2：按字段解析CSV（&gt;&gt; 自动跳过空格、换行） =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">===== 方法2：按字段读取解析CSV =====&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">id</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">string</span> <span class="n">name</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">double</span> <span class="n">temp</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="n">comma</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 跳过表头第一行
+</span></span></span><span class="line"><span class="cl">    <span class="n">string</span> <span class="n">header</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">getline</span><span class="p">(</span><span class="n">inFile</span><span class="p">,</span> <span class="n">header</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;跳过标题行: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">header</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 按逗号分割读取每一条传感器记录
+</span></span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="p">(</span><span class="n">inFile</span> <span class="o">&gt;&gt;</span> <span class="n">id</span> <span class="o">&gt;&gt;</span> <span class="n">comma</span><span class="p">)</span> <span class="c1">// 读取设备ID + 逗号分隔符
+</span></span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">getline</span><span class="p">(</span><span class="n">inFile</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="sc">&#39;,&#39;</span><span class="p">);</span> <span class="c1">// 读到逗号为止，取出名称
+</span></span></span><span class="line"><span class="cl">        <span class="n">inFile</span> <span class="o">&gt;&gt;</span> <span class="n">temp</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">inFile</span><span class="p">.</span><span class="n">ignore</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="sc">&#39;\n&#39;</span><span class="p">);</span>   <span class="c1">// 忽略本行剩下的内容直到换行
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;设备: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">id</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 温度: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">temp</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 判断结束原因
+</span></span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">inFile</span><span class="p">.</span><span class="n">eof</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">正常到达文件末尾&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">读取过程中发生错误&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">inFile</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p><strong>状态检查</strong>：</p>
+</blockquote>
+<ul>
+<li><code>is_open()</code>：文件是否成功打开</li>
+<li><code>eof()</code>：是否到达文件末尾（End Of File）</li>
+<li><code>fail()</code>：读取失败（如类型不匹配）</li>
+<li><code>bad()</code>：严重错误（如磁盘错误）</li>
+<li><code>good()</code>：一切正常</li>
+<li><code>clear()</code>：清除错误状态，允许继续操作</li>
+<li><code>seekg(pos)</code>：设置读指针位置（Get position）</li>
+<li><code>seekp(pos)</code>：设置写指针位置（Put position）</li>
+</ul>
+<hr>
+<h2 id="3-追加写入日志文件工业日志工具类">3. 追加写入日志文件（工业日志工具类）<a hidden class="anchor" aria-hidden="true" href="#3-追加写入日志文件工业日志工具类">#</a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;fstream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;ctime&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 工业日志工具类：追加模式写日志
+</span></span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Logger</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Logger</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">filename</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">:</span> <span class="n">logFileName</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">log</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">level</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">message</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// ios::app 追加模式：每次打开，内容写到文件末尾，不清空原有日志
+</span></span></span><span class="line"><span class="cl">        <span class="n">ofstream</span> <span class="n">out</span><span class="p">(</span><span class="n">logFileName</span><span class="p">,</span> <span class="n">ios</span><span class="o">::</span><span class="n">app</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">out</span><span class="p">.</span><span class="n">is_open</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;日志文件打开失败！&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">logFileName</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 获取当前系统时间
+</span></span></span><span class="line"><span class="cl">        <span class="n">time_t</span> <span class="n">now</span> <span class="o">=</span> <span class="n">time</span><span class="p">(</span><span class="k">nullptr</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">char</span> <span class="n">timeStr</span><span class="p">[</span><span class="mi">30</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// localtime 非线程安全！多线程环境禁止直接使用
+</span></span></span><span class="line"><span class="cl">        <span class="n">strftime</span><span class="p">(</span><span class="n">timeStr</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">timeStr</span><span class="p">),</span> <span class="s">&#34;%Y-%m-%d %H:%M:%S&#34;</span><span class="p">,</span> <span class="n">localtime</span><span class="p">(</span><span class="o">&amp;</span><span class="n">now</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">out</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;[&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">timeStr</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;] [&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">level</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;] &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">message</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// out 局部对象，函数退出自动析构关闭文件，RAII
+</span></span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">string</span> <span class="n">logFileName</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Logger</span> <span class="n">logger</span><span class="p">(</span><span class="s">&#34;system.log&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">logger</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="s">&#34;INFO&#34;</span><span class="p">,</span> <span class="s">&#34;系统启动&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">logger</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="s">&#34;INFO&#34;</span><span class="p">,</span> <span class="s">&#34;加载配置文件完成&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">logger</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="s">&#34;WARN&#34;</span><span class="p">,</span> <span class="s">&#34;设备1001温度接近阈值78.5度&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">logger</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="s">&#34;ERROR&#34;</span><span class="p">,</span> <span class="s">&#34;设备2001通信超时&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">logger</span><span class="p">.</span><span class="n">log</span><span class="p">(</span><span class="s">&#34;INFO&#34;</span><span class="p">,</span> <span class="s">&#34;系统正常运行&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;日志已写入 system.log</span><span class="se">\n</span><span class="s">&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 读取日志演示 =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;===== 读取日志文件 =====&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ifstream</span> <span class="n">in</span><span class="p">(</span><span class="s">&#34;system.log&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">in</span><span class="p">.</span><span class="n">is_open</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">string</span> <span class="n">line</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">while</span> <span class="p">(</span><span class="n">getline</span><span class="p">(</span><span class="n">in</span><span class="p">,</span> <span class="n">line</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">line</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">in</span><span class="p">.</span><span class="n">close</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">else</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;打开日志读取失败&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出：</p>
+<pre tabindex="0"><code>[2026-10-07 16:20:10] [INFO] 系统启动
+[2026-10-07 16:20:10] [INFO] 加载配置文件完成
+[2026-10-07 16:20:10] [WARN] 设备1001温度接近阈值78.5度
+[2026-10-07 16:20:10] [ERROR] 设备2001通信超时
+[2026-10-07 16:20:10] [INFO] 系统正常运行
+</code></pre><hr>
+<h2 id="4-读写二进制文件">4. 读写二进制文件<a hidden class="anchor" aria-hidden="true" href="#4-读写二进制文件">#</a></h2>
+<p>二进制文件直接读写内存字节，不做格式转换。优点是体积小、读写快、精度不丢；缺点是不可读且平台相关（字节序/内存对齐不同）。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;fstream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 工业传感器结构体，固定内存布局，适合二进制读写
+</span></span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">SensorRecord</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">sensorId</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">double</span> <span class="n">value</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">timestamp</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">char</span> <span class="n">status</span><span class="p">;</span>  <span class="c1">// &#39;N&#39;正常，&#39;A&#39;报警，&#39;E&#39;错误
+</span></span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 二进制写入：把结构体整块存入文件
+</span></span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">writeBinary</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">filename</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// ios::binary：二进制模式，不自动转换换行符
+</span></span></span><span class="line"><span class="cl">    <span class="n">ofstream</span> <span class="n">out</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ios</span><span class="o">::</span><span class="n">binary</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">out</span><span class="p">.</span><span class="n">is_open</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;无法创建二进制文件&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">SensorRecord</span> <span class="n">data</span><span class="p">[]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="mi">1001</span><span class="p">,</span> <span class="mf">78.5</span><span class="p">,</span> <span class="mi">1704067200</span><span class="p">,</span> <span class="sc">&#39;N&#39;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="mi">1002</span><span class="p">,</span> <span class="mf">28.3</span><span class="p">,</span> <span class="mi">1704067201</span><span class="p">,</span> <span class="sc">&#39;N&#39;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="mi">2001</span><span class="p">,</span> <span class="mf">125.8</span><span class="p">,</span> <span class="mi">1704067202</span><span class="p">,</span> <span class="sc">&#39;A&#39;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="mi">2002</span><span class="p">,</span> <span class="mf">45.2</span><span class="p">,</span> <span class="mi">1704067203</span><span class="p">,</span> <span class="sc">&#39;N&#39;</span><span class="p">},</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span><span class="mi">3001</span><span class="p">,</span> <span class="mf">15.7</span><span class="p">,</span> <span class="mi">1704067204</span><span class="p">,</span> <span class="sc">&#39;N&#39;</span><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">/</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">SensorRecord</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 先写记录数量（方便读的时候知道要读多少条）
+</span></span></span><span class="line"><span class="cl">    <span class="n">out</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">count</span><span class="p">),</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 整块写入结构体数组
+</span></span></span><span class="line"><span class="cl">    <span class="n">out</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">data</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// out是局部RAII对象，函数结束自动关闭文件，close()可省略
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;写入 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">count</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 条记录到 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">filename</span>
+</span></span><span class="line"><span class="cl">         <span class="o">&lt;&lt;</span> <span class="s">&#34;，文件大小: &#34;</span> <span class="o">&lt;&lt;</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 字节&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 二进制读取：从文件读出结构体
+</span></span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">readBinary</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">filename</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ifstream</span> <span class="n">in</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ios</span><span class="o">::</span><span class="n">binary</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">in</span><span class="p">.</span><span class="n">is_open</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cerr</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;无法打开二进制文件&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">in</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">count</span><span class="p">),</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;文件包含 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">count</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 条记录&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 动态内存存放读到的记录
+</span></span></span><span class="line"><span class="cl">    <span class="n">SensorRecord</span><span class="o">*</span> <span class="n">data</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SensorRecord</span><span class="p">[</span><span class="n">count</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">in</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">data</span><span class="p">),</span> <span class="n">count</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">SensorRecord</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">streamsize</span> <span class="n">bytesRead</span> <span class="o">=</span> <span class="n">in</span><span class="p">.</span><span class="n">gcount</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;本次实际读取 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">bytesRead</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 字节</span><span class="se">\n</span><span class="s">&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">count</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;记录&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;: ID=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">sensorId</span>
+</span></span><span class="line"><span class="cl">             <span class="o">&lt;&lt;</span> <span class="s">&#34; Value=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">value</span>
+</span></span><span class="line"><span class="cl">             <span class="o">&lt;&lt;</span> <span class="s">&#34; Time=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">timestamp</span>
+</span></span><span class="line"><span class="cl">             <span class="o">&lt;&lt;</span> <span class="s">&#34; Status=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">status</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">delete</span><span class="p">[]</span> <span class="n">data</span><span class="p">;</span> <span class="c1">// 释放堆内存
+</span></span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">writeBinary</span><span class="p">(</span><span class="s">&#34;sensors.bin&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">--- 读取二进制文件 ---&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">readBinary</span><span class="p">(</span><span class="s">&#34;sensors.bin&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><blockquote>
+<p><strong>关键要点</strong>：</p>
+</blockquote>
+<ul>
+<li><code>write(char*, size)</code>：写size个字节到文件</li>
+<li><code>read(char*, size)</code>：从文件读最多size个字节</li>
+<li><code>gcount()</code>：返回上一次read实际读的字节数</li>
+<li><code>reinterpret_cast&lt;char*&gt;(指针)</code>：把任意类型的指针强制解释为char*（字节指针）</li>
+<li>二进制文件<strong>不可跨平台</strong>：不同编译器/CPU的struct对齐、字节序、double的表示可能不同。跨平台需要自定义序列化</li>
+</ul>
+<hr>
+<h2 id="5-文件位置控制随机访问">5. 文件位置控制：随机访问<a hidden class="anchor" aria-hidden="true" href="#5-文件位置控制随机访问">#</a></h2>
+<p>可以在文件中移动读写指针，实现跳读、覆盖写等操作：</p>
+<pre tabindex="0"><code>#include &lt;iostream&gt;
+#include &lt;fstream&gt;
+using namespace std;
+
+int main()
+{
+    // ios::in|out：可读可写；binary：二进制；trunc：打开时清空旧内容
+    fstream file(&#34;random.bin&#34;, ios::in | ios::out | ios::binary | ios::trunc);
+    if (!file.is_open())
+    {
+        cout &lt;&lt; &#34;创建失败&#34; &lt;&lt; endl;
+        return 1;
+    }
+
+    // 写入10个int
+    int data[10];
+    for (int i = 0; i &lt; 10; ++i)
+        data[i] = i * 100;
+    file.write(reinterpret_cast&lt;char*&gt;(data), sizeof(data));
+
+    // seekg：移动【读指针】
+    file.seekg(4 * sizeof(int));   // 跳到索引4（第5个元素）
+    int val;
+    file.read(reinterpret_cast&lt;char*&gt;(&amp;val), sizeof(int));
+    cout &lt;&lt; &#34;第5条数据 = &#34; &lt;&lt; val &lt;&lt; endl; // 输出400
+
+    // seekp：移动【写指针】，覆盖写入
+    file.seekp(2 * sizeof(int));   // 跳到索引2（第3个元素）
+    int newVal = 9999;
+    file.write(reinterpret_cast&lt;char*&gt;(&amp;newVal), sizeof(int));
+
+    // 读全部数据验证
+    file.seekg(0);                 // 读指针移回文件开头
+    int result[10];
+    file.read(reinterpret_cast&lt;char*&gt;(result), sizeof(result));
+    cout &lt;&lt; &#34;全部数据: &#34;;
+    for (int i = 0; i &lt; 10; ++i)
+        cout &lt;&lt; result[i] &lt;&lt; &#34; &#34;;
+    cout &lt;&lt; endl;
+
+    // 从文件末尾向前偏移读取
+    // ios::beg 起点开头；ios::cur 当前位置；ios::end 文件末尾
+    file.seekg(-2 * (int)sizeof(int), ios::end);
+    file.read(reinterpret_cast&lt;char*&gt;(&amp;val), sizeof(int));
+    cout &lt;&lt; &#34;倒数第2条 = &#34; &lt;&lt; val &lt;&lt; endl;
+
+    return 0;
+}
+</code></pre><p>输出结果：</p>
+<pre tabindex="0"><code>第5条数据 = 400
+全部数据: 0 100 9999 300 400 500 600 700 800 900 
+倒数第2条 = 800
+</code></pre><blockquote>
+<p>核心知识点</p>
+</blockquote>
+<ul>
+<li><code>fstream</code>：同时支持读、写。</li>
+<li><code>seekg(pos)</code>：<strong>g = get，移动读指针</strong>，用来定位读取位置。</li>
+<li><code>seekp(pos)</code>：<strong>p = put，移动写指针</strong>，用来定位写入位置。</li>
+<li>偏移基准：
+<ul>
+<li><code>ios::beg</code>：从文件开头算偏移（默认）</li>
+<li><code>ios::cur</code>：从当前指针位置算偏移</li>
+<li><code>ios::end</code>：从文件末尾算偏移（偏移量一般写负数，向前找）</li>
+</ul>
+</li>
+<li><code>ios::trunc</code>：打开文件直接清空原有内容。</li>
+</ul>
+<hr>
+<h2 id="6-工业场景实战配置文件读写">6. 工业场景实战：配置文件读写<a hidden class="anchor" aria-hidden="true" href="#6-工业场景实战配置文件读写">#</a></h2>
+
+
+      </div>
+
+      <footer class="post-footer">
+          <nav class="series-nav">
+            <div class="series-nav-label">
+              <span>Posts 系列</span>
+              <span>27 篇</span>
+            </div>
+            <div class="series-nav-links">
+              <a class="series-nav-prev" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8701-%E5%BC%82%E5%B8%B8%E5%A4%84%E7%90%86trycatchthrow%E4%B8%8Eraii%E5%BC%82%E5%B8%B8%E5%AE%89%E5%85%A8/">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                <div>
+                  <span class="series-nav-dir">上一篇</span>
+                  <span class="series-nav-title">高级篇01-异常处理：try/catch/throw与RAII异常安全</span>
+                </div>
+              </a>
+              <a class="series-nav-next" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8703-string%E7%B1%BB%E5%8A%A8%E6%80%81%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%8Estringstream%E5%AD%97%E7%AC%A6%E4%B8%B2%E6%B5%81/">
+                <div>
+                  <span class="series-nav-dir">下一篇</span>
+                  <span class="series-nav-title">高级篇03-string类：动态字符串与stringstream字符串流</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+              </a>
+            </div>
+          </nav>
+      </footer>
+    </article>
+  </div>
+
+  <aside class="article-sidebar"><div class="sidebar-toc" id="sidebar-toc">
+      <div class="toc-title">目录</div>
+      <nav id="toc-nav">
+        <ul><li class="toc-h2">
+            <a href="#1-%e5%86%99%e6%96%87%e6%9c%ac%e6%96%87%e4%bb%b6ofstream" data-heading="1-写文本文件ofstream">1. 写文本文件：ofstream</a>
+          </li><li class="toc-h2">
+            <a href="#2-%e8%af%bb%e6%96%87%e6%9c%ac%e6%96%87%e4%bb%b6ifstream" data-heading="2-读文本文件ifstream">2. 读文本文件：ifstream</a>
+          </li><li class="toc-h2">
+            <a href="#3-%e8%bf%bd%e5%8a%a0%e5%86%99%e5%85%a5%e6%97%a5%e5%bf%97%e6%96%87%e4%bb%b6%e5%b7%a5%e4%b8%9a%e6%97%a5%e5%bf%97%e5%b7%a5%e5%85%b7%e7%b1%bb" data-heading="3-追加写入日志文件工业日志工具类">3. 追加写入日志文件（工业日志工具类）</a>
+          </li><li class="toc-h2">
+            <a href="#4-%e8%af%bb%e5%86%99%e4%ba%8c%e8%bf%9b%e5%88%b6%e6%96%87%e4%bb%b6" data-heading="4-读写二进制文件">4. 读写二进制文件</a>
+          </li><li class="toc-h2">
+            <a href="#5-%e6%96%87%e4%bb%b6%e4%bd%8d%e7%bd%ae%e6%8e%a7%e5%88%b6%e9%9a%8f%e6%9c%ba%e8%ae%bf%e9%97%ae" data-heading="5-文件位置控制随机访问">5. 文件位置控制：随机访问</a>
+          </li><li class="toc-h2">
+            <a href="#6-%e5%b7%a5%e4%b8%9a%e5%9c%ba%e6%99%af%e5%ae%9e%e6%88%98%e9%85%8d%e7%bd%ae%e6%96%87%e4%bb%b6%e8%af%bb%e5%86%99" data-heading="6-工业场景实战配置文件读写">6. 工业场景实战：配置文件读写</a>
+          </li></ul>
+      </nav>
+    </div></aside>
+</div>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">SciFiReal</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
