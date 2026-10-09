@@ -6,8 +6,15 @@
     <description>Recent content in Posts on SciFiReal</description>
     <generator>Hugo</generator>
     <language>zh-cn</language>
-    <lastBuildDate>Thu, 08 Oct 2026 20:40:41 +0800</lastBuildDate>
+    <lastBuildDate>Fri, 09 Oct 2026 09:40:22 +0800</lastBuildDate>
     <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>高级篇07-函数对象与Lambda表达式（c&#43;&#43;11）</title>
+      <link>http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8707-%E5%87%BD%E6%95%B0%E5%AF%B9%E8%B1%A1%E4%B8%8Elambda%E8%A1%A8%E8%BE%BE%E5%BC%8Fc&#43;&#43;11/</link>
+      <pubDate>Fri, 09 Oct 2026 09:40:22 +0800</pubDate>
+      <guid>http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8707-%E5%87%BD%E6%95%B0%E5%AF%B9%E8%B1%A1%E4%B8%8Elambda%E8%A1%A8%E8%BE%BE%E5%BC%8Fc&#43;&#43;11/</guid>
+      <description>高级篇07-函数对象与Lambda表达式（c++11）</description>
+    </item>
     <item>
       <title>高级篇06-关联容器：map、set与迭代器进阶</title>
       <link>http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8706-%E5%85%B3%E8%81%94%E5%AE%B9%E5%99%A8mapset%E4%B8%8E%E8%BF%AD%E4%BB%A3%E5%99%A8%E8%BF%9B%E9%98%B6/</link>

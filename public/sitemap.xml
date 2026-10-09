@@ -3,22 +3,25 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>http://localhost:1313/categories/c&#43;&#43;/</loc>
-    <lastmod>2026-10-08T20:40:41+08:00</lastmod>
+    <lastmod>2026-10-09T09:40:22+08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/tags/c&#43;&#43;/</loc>
-    <lastmod>2026-10-08T20:40:41+08:00</lastmod>
+    <lastmod>2026-10-09T09:40:22+08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/categories/</loc>
-    <lastmod>2026-10-08T20:40:41+08:00</lastmod>
+    <lastmod>2026-10-09T09:40:22+08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/posts/</loc>
-    <lastmod>2026-10-08T20:40:41+08:00</lastmod>
+    <lastmod>2026-10-09T09:40:22+08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/</loc>
-    <lastmod>2026-10-08T20:40:41+08:00</lastmod>
+    <lastmod>2026-10-09T09:40:22+08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/tags/</loc>
-    <lastmod>2026-10-08T20:40:41+08:00</lastmod>
+    <lastmod>2026-10-09T09:40:22+08:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8707-%E5%87%BD%E6%95%B0%E5%AF%B9%E8%B1%A1%E4%B8%8Elambda%E8%A1%A8%E8%BE%BE%E5%BC%8Fc&#43;&#43;11/</loc>
+    <lastmod>2026-10-09T09:40:22+08:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8706-%E5%85%B3%E8%81%94%E5%AE%B9%E5%99%A8mapset%E4%B8%8E%E8%BF%AD%E4%BB%A3%E5%99%A8%E8%BF%9B%E9%98%B6/</loc>
     <lastmod>2026-10-08T20:40:41+08:00</lastmod>

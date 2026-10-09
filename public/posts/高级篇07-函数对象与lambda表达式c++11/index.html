@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="auto" data-theme="light" translate="no">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>高级篇07-函数对象与Lambda表达式（c&#43;&#43;11） | SciFiReal</title>
+<meta name="keywords" content="C&#43;&#43;">
+<meta name="description" content="高级篇07-函数对象与Lambda表达式（c&#43;&#43;11）">
+<meta name="author" content="Hi, I&#39;m SciFiReal">
+<link rel="canonical" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8707-%E5%87%BD%E6%95%B0%E5%AF%B9%E8%B1%A1%E4%B8%8Elambda%E8%A1%A8%E8%BE%BE%E5%BC%8Fc&#43;&#43;11/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.341560dc62f78a6c33ce7366efce8909226a3827c3fc790333b2217f53d96f08.css" integrity="sha256-NBVg3GL3imwzznNm786JCSJqOCfD/HkDM7Ihf1PZbwg=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="zh-cn" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8707-%E5%87%BD%E6%95%B0%E5%AF%B9%E8%B1%A1%E4%B8%8Elambda%E8%A1%A8%E8%BE%BE%E5%BC%8Fc&#43;&#43;11/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.querySelector("html").dataset.theme = 'dark';
+    }
+
+</script><style>
+     
+    .header { transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease; }
+</style>
+<script>
+(function() {
+    'use strict';
+
+    
+    var header = document.getElementById('site-header');
+    if (header) {
+        var onScroll = function() {
+            if (window.scrollY > 20) {
+                header.classList.add('header--scrolled');
+            } else {
+                header.classList.remove('header--scrolled');
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function initTocSpy() {
+        var tocNav = document.getElementById('toc-nav');
+        if (!tocNav) return;
+
+        var links = tocNav.querySelectorAll('a[data-heading]');
+        if (links.length === 0) return;
+
+        var headings = [];
+        links.forEach(function(link) {
+            var id = link.getAttribute('data-heading');
+            var heading = document.getElementById(id);
+            if (heading) {
+                headings.push({ el: heading, link: link });
+            }
+        });
+
+        if (headings.length === 0) return;
+
+        var activeLink = null;
+
+        function setActive(link) {
+            if (activeLink === link) return;
+            if (activeLink) activeLink.classList.remove('toc-active');
+            if (link) {
+                link.classList.add('toc-active');
+                
+                var sidebar = document.getElementById('sidebar-toc');
+                if (sidebar) {
+                    var linkRect = link.getBoundingClientRect();
+                    var sidebarRect = sidebar.getBoundingClientRect();
+                    if (linkRect.top < sidebarRect.top + 40 || linkRect.bottom > sidebarRect.bottom - 20) {
+                        link.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                }
+            }
+            activeLink = link;
+        }
+
+        function onScroll() {
+            var scrollPos = window.scrollY + 100;
+            var current = null;
+
+            for (var i = headings.length - 1; i >= 0; i--) {
+                if (headings[i].el.offsetTop <= scrollPos) {
+                    current = headings[i];
+                    break;
+                }
+            }
+
+            if (current) {
+                setActive(current.link);
+            } else if (headings.length > 0) {
+                setActive(headings[0].link);
+            }
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    
+    function addCodeLangLabels() {
+        var blocks = document.querySelectorAll('.post-content pre, .md-content .highlight');
+        blocks.forEach(function(block) {
+            if (block.querySelector('.code-lang-label')) return;
+
+            var code = block.querySelector('code');
+            if (!code) return;
+
+            var lang = '';
+            var classes = code.className || '';
+            var match = classes.match(/language-(\w+)/);
+            if (match) {
+                lang = match[1];
+            } else {
+                match = classes.match(/language-(\S+)/);
+                if (match) lang = match[1];
+            }
+
+            if (lang) {
+                var label = document.createElement('span');
+                label.className = 'code-lang-label';
+                label.textContent = lang;
+                block.style.position = 'relative';
+                block.insertBefore(label, block.firstChild);
+            }
+        });
+    }
+
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            initTocSpy();
+            addCodeLangLabels();
+        });
+    } else {
+        initTocSpy();
+        addCodeLangLabels();
+    }
+})();
+</script>
+
+</head>
+<body id="top" translate="no">
+    <header class="header" id="site-header">
+    <nav class="header-nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="SciFiReal (Alt + H)">SciFiReal</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" class="theme-toggle" accesskey="t" title="(Alt + T)" aria-label="Toggle theme">
+                    <svg class="moon" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg class="sun" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <a class="search-trigger" href="http://localhost:1313/search/" title="搜索" accesskey="/">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+        </a>
+        <ul id="menu" class="menu">
+            <li>
+                <a href="http://localhost:1313/" title="首页">
+                    <span>首页</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/categories/" title="分类">
+                    <span>分类</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags/" title="标签墙">
+                    <span>标签墙</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/archives/" title="归档">
+                    <span>归档</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/about/" title="关于">
+                    <span>关于</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<div class="article-layout">
+  <div class="article-main">
+    <article class="post-single">
+      <header class="post-header">
+        <nav class="breadcrumbs" role="navigation" aria-label="Breadcrumb">
+            <a href="/">首页</a>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+            <a href="/posts/">Posts</a>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-right">
+        <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+</nav>
+        <h1 class="post-title entry-hint-parent">
+          高级篇07-函数对象与Lambda表达式（c&#43;&#43;11）
+        </h1>
+        <div class="post-meta">
+
+<span title='2026-10-09 09:40:22 +0800 CST'>October 9, 2026</span>&nbsp;·&nbsp;<span>9 min</span>&nbsp;·&nbsp;<span>1904 words</span>&nbsp;·&nbsp;<span>Hi, I&#39;m SciFiReal</span>
+
+</div>
+        <div class="post-header-tags">
+          <a class="tag-pill" href="http://localhost:1313/tags/c&#43;&#43;/">C&#43;&#43;</a>
+        </div>
+      </header> 
+      <div class="post-content md-content"><blockquote>
+<p>在STL算法中，我们频繁把函数名作为参数传给算个，比如sort的第三个参数是比较函数、find_if的第三个参数是条件判断函数、for_each的第三个参数是操作函数。这种能被当作函数调用的东西就是<strong>函数对象</strong>。C++新增的Lambda表达式让创建函数对象变得极其简单。</p>
+</blockquote>
+<blockquote>
+<p>什么是函数对象？</p>
+</blockquote>
+<p>C++函数对象 = 重载<code>operator()</code>的类/结构体的实例，本质是一个对象，但语法上可以像普通函数一样用()调用，同时还拥有对象携带状态、有明确类型的能力。</p>
+<p>你写出<code>obj(a, b)</code>时：</p>
+<ul>
+<li>如果obj是普通函数，就是直接调用函数；</li>
+<li>如果obj是某个类的对象，编译器会自动转换为<code>obj.operator()(a, b)</code>，这就是重载()运算符的效果。</li>
+</ul>
+<blockquote>
+<p>Lambda表达式（C++11）：编译器会为每个Lambda自动生成一个匿名的函数对象。可以在代码中&quot;就地&quot;定义一个可调用对象，无需单独写一个类或函数。</p>
+</blockquote>
+<h2 id="1-函数对象基础">1. 函数对象基础<a hidden class="anchor" aria-hidden="true" href="#1-函数对象基础">#</a></h2>
+<p>函数对象本质上是重载了<code>operator()</code>的类/结构体。它的对象可以像普通函数一样被调用：<code>对象(参数)</code>。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;algorithm&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// ===== 1. 无状态函数对象：打印器 =====
+</span></span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">Printer</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 重载()运算符，对象可像函数一样调用
+</span></span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">operator</span><span class="p">()(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="k">const</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// ===== 2. 带状态函数对象：计数器 =====
+</span></span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">Counter</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">count</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Counter</span><span class="p">()</span> <span class="o">:</span> <span class="n">count</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">operator</span><span class="p">()(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">50</span><span class="p">)</span> <span class="n">count</span><span class="o">++</span><span class="p">;</span> <span class="c1">// 统计大于50的元素数量
+</span></span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// ===== 3. 参数化函数对象：阈值比较器 =====
+</span></span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">GreaterThan</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">threshold</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">GreaterThan</span><span class="p">(</span><span class="kt">int</span> <span class="n">t</span><span class="p">)</span> <span class="o">:</span> <span class="n">threshold</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="p">{}</span> <span class="c1">// 构造函数传入阈值，定制判断逻辑
+</span></span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="nf">operator</span><span class="p">()(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="k">const</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">;</span> <span class="c1">// 判断元素是否大于阈值
+</span></span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// ===== 4. 作为sort比较器的函数对象 =====
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 对pair，按first字符串降序比较
+</span></span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">CompareByFirstDesc</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="nf">operator</span><span class="p">()(</span><span class="k">const</span> <span class="n">pair</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&amp;</span> <span class="n">a</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">const</span> <span class="n">pair</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&amp;</span> <span class="n">b</span><span class="p">)</span> <span class="k">const</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">a</span><span class="p">.</span><span class="n">first</span> <span class="o">&gt;</span> <span class="n">b</span><span class="p">.</span><span class="n">first</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">data</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">data</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">10</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 1. Printer：for_each传入临时函数对象 Printer()
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;=== 1. Printer函数对象 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;数据: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">for_each</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">Printer</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 2. Counter：带内部状态；for_each按值传递，返回拷贝，需接收结果才能拿到count
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 2. Counter统计大于50的数 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Counter</span> <span class="n">c</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">c</span> <span class="o">=</span> <span class="n">for_each</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">c</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;大于50的数有 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">c</span><span class="p">.</span><span class="n">count</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 个&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 3. GreaterThan：构造时传入不同阈值，复用同一套判断逻辑
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 3. GreaterThan参数化比较 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">count_if</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">GreaterThan</span><span class="p">(</span><span class="mi">30</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;大于30的: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">n</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 个&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">n</span> <span class="o">=</span> <span class="n">count_if</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">GreaterThan</span><span class="p">(</span><span class="mi">70</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;大于70的: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">n</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 个&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 4. sort自定义比较器，用于pair排序
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 4. 自定义比较器排序 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">items</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">items</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;加热炉&#34;</span><span class="p">,</span> <span class="mi">85</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">items</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;反应釜&#34;</span><span class="p">,</span> <span class="mi">120</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">items</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;冷却塔&#34;</span><span class="p">,</span> <span class="mi">28</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">items</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;阀门&#34;</span><span class="p">,</span> <span class="mi">45</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 4a. pair默认排序：优先按first升序
+</span></span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">sorted1</span> <span class="o">=</span> <span class="n">items</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">sort</span><span class="p">(</span><span class="n">sorted1</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">sorted1</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;默认排序（按名称升序）:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">sorted1</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sorted1</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">first</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sorted1</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">second</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 4b. 使用自定义函数对象，按名称降序
+</span></span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">sorted2</span> <span class="o">=</span> <span class="n">items</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">sort</span><span class="p">(</span><span class="n">sorted2</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">sorted2</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">CompareByFirstDesc</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;CompareByFirstDesc（按名称降序）:&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">sorted2</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;  &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sorted2</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">first</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sorted2</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">second</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出结果：</p>
+<pre tabindex="0"><code>=== 1. Printer函数对象 ===
+数据: 10 20 30 40 50 60 70 80 90 100
+
+=== 2. Counter统计大于50的数 ===
+大于50的数有 5 个
+
+=== 3. GreaterThan参数化比较 ===
+大于30的: 7 个
+大于70的: 3 个
+
+=== 4. 自定义比较器排序 ===
+默认排序（按名称升序）:
+  阀门: 45
+  反应釜: 120
+  加热炉: 85
+  冷却塔: 28
+CompareByFirstDesc（按名称降序）:
+  冷却塔: 28
+  加热炉: 85
+  反应釜: 120
+  阀门: 45
+</code></pre><blockquote>
+<ol>
+<li><code>operator()</code> 到底是什么</li>
+</ol>
+</blockquote>
+<p><code>operator()</code> 叫<strong>函数调用运算符重载</strong>。C++ 规定：<code>()</code> 是运算符，就像 <code>+</code>、<code>&gt;</code> 一样，我们可以给类 / 结构体重载这个运算符。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">Printer</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">operator</span><span class="p">()(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="k">const</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div><p>当你写<code>Printer p; p(10);</code>，底层会被翻译成<code>p.operator()(10);</code></p>
+<p>一句话总结：<code>operator()</code> 就是让对象能使用 <code>()</code> 括号调用的重载函数</p>
+<blockquote>
+<ol start="2">
+<li><code>Counter c; c = for_each(..., c);</code> 和 <code>for_each(..., Printer());</code> 两者的差别</li>
+</ol>
+</blockquote>
+<ul>
+<li><code>Printer()</code>：<strong>临时对象</strong>，传给 for_each，用完直接丢弃，<strong>不需要保存状态</strong>。</li>
+<li><code>Counter c</code>：<strong>命名对象</strong>，我们要利用它<strong>保存不断变化的 count 状态</strong>，而 for_each 是值拷贝，所以必须接收返回值拿回修改后的副本。</li>
+</ul>
+<hr>
+<h2 id="2-标准库中的函数对象">2. 标准库中的函数对象<a hidden class="anchor" aria-hidden="true" href="#2-标准库中的函数对象">#</a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;algorithm&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;functional&gt;</span><span class="cp"> </span><span class="c1">// plus/less/greater / std::bind
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="mi">8</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">v</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;原始: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">for_each</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="p">[](</span><span class="kt">int</span> <span class="n">x</span><span class="p">){</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span> <span class="p">});</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 1. less&lt;T&gt;：小于比较器，sort默认规则，a &lt; b，升序排序
+</span></span></span><span class="line"><span class="cl">    <span class="n">sort</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">less</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">());</span>  <span class="c1">// 与sort默认行为一致（升序）
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;less&lt;int&gt;() 升序: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 2. greater&lt;T&gt;：大于比较器，a &gt; b，降序排序
+</span></span></span><span class="line"><span class="cl">    <span class="n">sort</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">greater</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">());</span>  <span class="c1">// 降序
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;greater&lt;int&gt;() 降序: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">v</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 3. plus&lt;T&gt; 算术函数对象，配合 std::bind 绑定第二个参数
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// bind(plus&lt;int&gt;(), placeholders::_1, 10) =&gt; 传入的第一个参数 +10
+</span></span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">result</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">transform</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">result</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">              <span class="n">bind</span><span class="p">(</span><span class="n">plus</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(),</span> <span class="n">placeholders</span><span class="o">::</span><span class="n">_1</span><span class="p">,</span> <span class="mi">10</span><span class="p">));</span>  <span class="c1">// 每个元素 +10
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;每个元素+10: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">result</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">result</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 4. logical_and&lt;T&gt;/logical_or&lt;T&gt;/logical_not&lt;T&gt;：逻辑运算函数对象
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// 5. equal_to&lt;T&gt;/not_equal_to&lt;T&gt;：相等、不等比较函数对象
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// count_if + std::bind，绑定equal_to的第二个参数为5
+</span></span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">count5</span> <span class="o">=</span> <span class="n">count_if</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">                          <span class="n">bind</span><span class="p">(</span><span class="n">equal_to</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(),</span> <span class="n">placeholders</span><span class="o">::</span><span class="n">_1</span><span class="p">,</span> <span class="mi">5</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;等于5的元素个数: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">count5</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出结果：</p>
+<pre tabindex="0"><code>原始: 4 7 10 3 6 9 2 5
+less&lt;int&gt;() 升序: 2 3 4 5 6 7 9 10
+greater&lt;int&gt;() 降序: 10 9 7 6 5 4 3 2
+每个元素+10: 20 19 17 16 15 14 13 12
+等于5的元素个数: 1
+</code></pre><hr>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">result</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl"><span class="n">transform</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">result</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">          <span class="n">bind</span><span class="p">(</span><span class="n">plus</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(),</span> <span class="n">placeholders</span><span class="o">::</span><span class="n">_1</span><span class="p">,</span> <span class="mi">10</span><span class="p">));</span>
+</span></span></code></pre></div><ol>
+<li>transform函数原型</li>
+</ol>
+<pre tabindex="0"><code>transform(输入起始, 输入结束, 输出起始, 一元函数对象)
+</code></pre><p>功能：遍历输入区间 <code>[输入起始,输入结束)</code>，<strong>对每一个元素调用传入的函数</strong>，把函数返回值写入输出容器。</p>
+<p>一元函数对象是指一次只接受一个参数。</p>
+<ol start="2">
+<li>plus<int>是指</li>
+</ol>
+<p><code>plus&lt;int&gt;</code> 是 <code>&lt;functional&gt;</code> 提供的<strong>标准二元函数对象</strong>，它重载了 <code>operator()</code>，接收<strong>两个参数</strong>，返回相加结果。<code>plus&lt;int&gt;()(a, b)</code>  等价 return a + b;</p>
+<p>问题：transform的第四个参数只能传入一个参数，因此需要bind把其中一个参数固定死。</p>
+<ol start="3">
+<li>bind(plus<int>(), placeholders::_1, 10)</li>
+</ol>
+<p><code>std::bind</code>：绑定器，包装一个可调用对象，固定部分参数，生成新的可调用对象。<code>bind( 可调用对象, 参数1, 参数2, ... )</code>。</p>
+<ul>
+<li><code>plus&lt;int&gt;()</code>：要包装的二元函数对象，它需要两个参数 <code>(arg1, arg2)</code>。</li>
+<li><code>placeholders::_1</code>：<strong>占位符</strong>。含义：将来调用这个 bind 包装后的函数时，<strong>外面传进来的第 1 个参数放在这个位置</strong>。</li>
+<li><code>10</code>：固定常量，永远是第二个参数，不会变。</li>
+</ul>
+<hr>
+<h2 id="3-lambda表达式c11匿名函数">3. Lambda表达式（C++11）：匿名函数<a hidden class="anchor" aria-hidden="true" href="#3-lambda表达式c11匿名函数">#</a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;algorithm&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">data</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">data</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="mi">15</span> <span class="o">%</span> <span class="mi">100</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;原始数据: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 1. 最简单Lambda：无捕获 =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 1. 简单Lambda打印 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">for_each</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">             <span class="p">[](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span> <span class="p">});</span>  <span class="c1">// Lambda表达式
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// Lambda完整语法：[捕获列表](参数列表) mutable 异常 -&gt; 返回值类型 {函数体}
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// 常用简化写法：[捕获](参数) { 代码 }
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 2. Lambda配合sort作为比较器 =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 2. Lambda排序 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 升序
+</span></span></span><span class="line"><span class="cl">    <span class="n">sort</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">         <span class="p">[](</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">;</span> <span class="p">});</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;升序: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 降序
+</span></span></span><span class="line"><span class="cl">    <span class="n">sort</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">         <span class="p">[](</span><span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">a</span> <span class="o">&gt;</span> <span class="n">b</span><span class="p">;</span> <span class="p">});</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;降序: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 3. 值捕获：拷贝外部变量，Lambda内部是副本，外部修改不影响 =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 3. 值捕获外部变量 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">threshold</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// [threshold] 值捕获：复制一份threshold到lambda
+</span></span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">aboveThreshold</span> <span class="o">=</span> <span class="n">count_if</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">                                  <span class="p">[</span><span class="n">threshold</span><span class="p">](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">;</span> <span class="p">});</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;大于 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">threshold</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 的有 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">aboveThreshold</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 个&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">threshold</span> <span class="o">=</span> <span class="mi">30</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">above30</span> <span class="o">=</span> <span class="n">count_if</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">                           <span class="p">[</span><span class="n">threshold</span><span class="p">](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">;</span> <span class="p">});</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;大于 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">threshold</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 的有 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">above30</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 个&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 4. 引用捕获：&amp;捕获，直接操作外部原变量，可以修改外部值 =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 4. 引用捕获并修改外部变量 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">sum</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">for_each</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">             <span class="p">[</span><span class="o">&amp;</span><span class="n">sum</span><span class="p">](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="n">sum</span> <span class="o">+=</span> <span class="n">x</span><span class="p">;</span> <span class="p">});</span> <span class="c1">// &amp;sum 引用捕获
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;累加和: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">sum</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 5. 显式指定返回值类型 -&gt; 类型 =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 5. 显式返回值类型 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">double</span> <span class="n">avg</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">data</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">total</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">for_each</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="p">[</span><span class="o">&amp;</span><span class="n">total</span><span class="p">](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="n">total</span> <span class="o">+=</span> <span class="n">x</span><span class="p">;</span> <span class="p">});</span>
+</span></span><span class="line"><span class="cl">      	<span class="c1">// static_cast 是 C++ 的静态类型转换关键字
+</span></span></span><span class="line"><span class="cl">      	<span class="c1">// avg = (double)total / data.size(); 这是C风格的代码
+</span></span></span><span class="line"><span class="cl">        <span class="n">avg</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="n">total</span><span class="p">)</span> <span class="o">/</span> <span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>  <span class="c1">// C++风格代码
+</span></span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;平均值: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">avg</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 6. 混合捕获：部分引用、部分值捕获 =====
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 6. 混合捕获 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">minLimit</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="n">maxLimit</span> <span class="o">=</span> <span class="mi">80</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">outOfRangeCount</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// [&amp;outOfRangeCount, minLimit, maxLimit]
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// outOfRangeCount引用捕获；minLimit、maxLimit值捕获
+</span></span></span><span class="line"><span class="cl">    <span class="n">for_each</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">             <span class="p">[</span><span class="o">&amp;</span><span class="n">outOfRangeCount</span><span class="p">,</span> <span class="n">minLimit</span><span class="p">,</span> <span class="n">maxLimit</span><span class="p">](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                 <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">minLimit</span> <span class="o">||</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">maxLimit</span><span class="p">)</span> <span class="n">outOfRangeCount</span><span class="o">++</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="p">});</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;超出[&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">minLimit</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;, &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">maxLimit</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;]的数: &#34;</span>
+</span></span><span class="line"><span class="cl">         <span class="o">&lt;&lt;</span> <span class="n">outOfRangeCount</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 个&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出结果：</p>
+<pre tabindex="0"><code>原始数据: 15 30 45 60 75 90 5 20 35 50
+
+=== 1. 简单Lambda打印 ===
+15 30 45 60 75 90 5 20 35 50
+
+=== 2. Lambda排序 ===
+升序: 5 15 20 30 35 45 50 60 75 90
+降序: 90 75 60 50 45 35 30 20 15 5
+
+=== 3. 值捕获外部变量 ===
+大于 50 的有 3 个
+大于 30 的有 6 个
+
+=== 4. 引用捕获并修改外部变量 ===
+累加和: 425
+
+=== 5. 显式返回值类型 ===
+平均值: 42.5
+
+=== 6. 混合捕获 ===
+超出[20, 80]的数: 3 个
+</code></pre><blockquote>
+<p>Lambda 核心知识点</p>
+</blockquote>
+<p><strong>Lambda 本质：编译器自动生成的匿名函数对象（仿函数）</strong>，自动重载<code>operator()</code>，省去手动写 struct 的麻烦。 语法：<code>[捕获列表](参数列表) -&gt; 返回类型 {函数体}</code></p>
+<blockquote>
+<p>捕获列表规则（重点）</p>
+</blockquote>
+<ol>
+<li><code>[]</code>：不捕获任何外部变量；</li>
+<li><code>[var]</code>：<strong>值捕获</strong>，拷贝变量到 lambda 内部；lambda 拿到的是副本，外部后续修改不会影响 lambda 内的值，默认不能修改副本（加<code>mutable</code>才可以改副本）；</li>
+<li><code>[&amp;var]</code>：<strong>引用捕获</strong>，直接绑定外部原变量，lambda 内部修改就是修改外部变量；</li>
+<li><code>[=]</code>：<strong>全部值捕获</strong>，所有外部变量都拷贝；</li>
+<li><code>[&amp;]</code>：<strong>全部引用捕获</strong>，所有外部变量都引用；</li>
+<li>混合捕获：<code>[&amp;a, b]</code>：a 引用捕获，b 值捕获；</li>
+<li><code>[this]</code>：捕获this指针，可访问类成员；</li>
+</ol>
+<blockquote>
+<p>适用场景</p>
+</blockquote>
+<p>直接作为 STL 算法（<code>sort</code> / <code>for_each</code> / <code>count_if</code>）的可调用参数，替代手写仿函数、函数指针，代码更简短。</p>
+<hr>
+<h2 id="4-lambda与函数对象编译器的魔法">4. Lambda与函数对象：编译器的魔法<a hidden class="anchor" aria-hidden="true" href="#4-lambda与函数对象编译器的魔法">#</a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// 原始Lambda代码
+</span></span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="n">threshold</span> <span class="o">=</span> <span class="mi">50</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">count_if</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">         <span class="p">[</span><span class="n">threshold</span><span class="p">](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">;</span> <span class="p">});</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 编译器大致翻译成下面这个匿名仿函数（简化示意）
+</span></span></span><span class="line"><span class="cl"><span class="k">struct</span> <span class="nc">AnonymousFunctor</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">threshold</span><span class="p">;</span>        <span class="c1">// 值捕获的变量，变成仿函数的成员变量
+</span></span></span><span class="line"><span class="cl">    <span class="n">AnonymousFunctor</span><span class="p">(</span><span class="kt">int</span> <span class="n">t</span><span class="p">)</span> <span class="o">:</span> <span class="n">threshold</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="p">{}</span> <span class="c1">// 构造函数，拷贝外部变量
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// operator() 默认带 const，因为值捕获默认不允许修改内部成员
+</span></span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="nf">operator</span><span class="p">()(</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="k">const</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="n">count_if</span><span class="p">(</span><span class="n">data</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">data</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span> <span class="n">AnonymousFunctor</span><span class="p">(</span><span class="n">threshold</span><span class="p">));</span>
+</span></span></code></pre></div><blockquote>
+<p>知识点理解：</p>
+</blockquote>
+<ol>
+<li><strong><code>[threshold]</code> 值捕获</strong>：编译器生成仿函数时，<strong>把外部变量拷贝一份，存为仿函数的成员变量</strong>。调用仿函数构造器时，把外部<code>threshold</code>的值复制进去。</li>
+<li><code>operator()</code> 后面自带 <code>const</code>：默认情况下，lambda<strong>不能修改值捕获得到的成员变量</strong>。
+<ul>
+<li>如果想在 lambda 内部修改捕获的副本，需要加 <code>mutable</code>：<code>[threshold](int x) mutable { threshold++; return x &gt; threshold; }</code></li>
+<li>加上<code>mutable</code>后，生成的<code>operator()</code>就会去掉<code>const</code>。</li>
+</ul>
+</li>
+<li>外部后续修改<code>threshold</code>，<strong>不会影响仿函数内部的成员</strong>，因为是拷贝，不是引用。</li>
+<li><code>AnonymousFunctor(threshold)</code> <strong>不是赋值，是创建临时对象（调用构造函数）</strong>。 <code>AnonymousFunctor</code> 是结构体名，<code>AnonymousFunctor(threshold)</code> 等价：<strong>调用结构体的构造函数，生成一个匿名临时仿函数对象</strong>。</li>
+</ol>
+<h2 id="5-mutable-lambda修改捕获的值">5. mutable Lambda：修改捕获的值<a hidden class="anchor" aria-hidden="true" href="#5-mutable-lambda修改捕获的值">#</a></h2>
+<p>默认情况下，Lambda的<code>operator()</code>是const的，不能修改值捕获的变量。加<code>mutable</code>可以。</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;algorithm&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">v</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;=</span> <span class="mi">5</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">v</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 值捕获：不加mutable，无法修改捕获的副本 =====
+</span></span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 下面代码编译报错：lambda默认生成const的operator()，不能修改成员
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// for_each(v.begin(), v.end(), [x](int n) { x += n; });
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 值捕获 + mutable：允许lambda内部修改捕获到的副本
+</span></span></span><span class="line"><span class="cl">    <span class="c1">// 注意：修改的只是lambda内部拷贝出来的副本，外部原始x不受影响
+</span></span></span><span class="line"><span class="cl">    <span class="n">for_each</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">             <span class="p">[</span><span class="n">x</span><span class="p">](</span><span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="k">mutable</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                 <span class="n">x</span> <span class="o">+=</span> <span class="n">n</span><span class="p">;</span>        <span class="c1">// mutable放开const限制，可以修改副本x
+</span></span></span><span class="line"><span class="cl">                 <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;内部x=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">             <span class="p">});</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">外部x=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; (值捕获，修改的是副本，外部不变)&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// ===== 引用捕获：直接操作外部原变量，不需要mutable =====
+</span></span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">for_each</span><span class="p">(</span><span class="n">v</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">v</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">             <span class="p">[</span><span class="o">&amp;</span><span class="n">y</span><span class="p">](</span><span class="kt">int</span> <span class="n">n</span><span class="p">)</span> <span class="p">{</span> <span class="n">y</span> <span class="o">+=</span> <span class="n">n</span><span class="p">;</span> <span class="p">});</span> <span class="c1">// 引用捕获，操作的就是外部原始y
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;引用捕获后y=&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">y</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出结果：</p>
+<pre tabindex="0"><code>内部x=1 内部x=3 内部x=6 内部x=10 内部x=15
+外部x=0 (值捕获，修改的是副本，外部不变)
+引用捕获后y=15
+</code></pre><hr>
+<h2 id="6-lambda作为返回值参数函数式编程风格">6. Lambda作为返回值/参数（函数式编程风格）<a hidden class="anchor" aria-hidden="true" href="#6-lambda作为返回值参数函数式编程风格">#</a></h2>
+<blockquote>
+<p><code>std::function&lt;T&gt;</code>是C++11引入的&quot;可调用对象包装器&quot;，它可以容纳任何能像函数一样调用的东西：普通函数、函数指针、函数对象、Lambda。这让我们可以用统一的接口来处理不同的可调用对象。</p>
+</blockquote>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;iostream&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;algorithm&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;functional&gt;</span><span class="cp">   </span><span class="c1">// std::function 可调用对象包装器
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;string&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// ===== 1. std::function&lt;T&gt;：统一包装各类可调用对象 =====
+</span></span></span><span class="line"><span class="cl"><span class="c1">// std::function&lt;bool(int)&gt; 可以包装任意：接收1个int、返回bool的可调用对象
+</span></span></span><span class="line"><span class="cl"><span class="c1">// 可调用对象：普通函数、函数对象、Lambda表达式
+</span></span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// ===== 2. Lambda作为函数返回值 =====
+</span></span></span><span class="line"><span class="cl"><span class="n">function</span><span class="o">&lt;</span><span class="kt">bool</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">makeThresholdChecker</span><span class="p">(</span><span class="kt">int</span> <span class="n">threshold</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 返回Lambda，值捕获threshold
+</span></span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">[</span><span class="n">threshold</span><span class="p">](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">threshold</span><span class="p">;</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// ===== 3. std::function作为函数参数，统一接口 =====
+</span></span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">processData</span><span class="p">(</span><span class="k">const</span> <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;&amp;</span> <span class="n">data</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                 <span class="n">function</span><span class="o">&lt;</span><span class="kt">bool</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">condition</span><span class="p">,</span>   <span class="c1">// 判断条件
+</span></span></span><span class="line"><span class="cl">                 <span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="o">&gt;</span> <span class="n">handler</span><span class="p">)</span>     <span class="c1">// 满足条件后的处理动作
+</span></span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">data</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">condition</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+</span></span><span class="line"><span class="cl">            <span class="n">handler</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">int</span> <span class="nf">main</span><span class="p">(){</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span> <span class="n">readings</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">readings</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="mi">15</span> <span class="o">+</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">8</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;读数: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">readings</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">readings</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 1. 调用工厂函数，返回Lambda并保存到function对象
+</span></span></span><span class="line"><span class="cl">  	<span class="c1">// auto是指什么呢
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 使用工厂函数创建检查器 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">auto</span> <span class="n">above50</span> <span class="o">=</span> <span class="n">makeThresholdChecker</span><span class="p">(</span><span class="mi">50</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">auto</span> <span class="n">above80</span> <span class="o">=</span> <span class="n">makeThresholdChecker</span><span class="p">(</span><span class="mi">80</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">count50</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">count80</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">readings</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">above50</span><span class="p">(</span><span class="n">readings</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span> <span class="n">count50</span><span class="o">++</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">above80</span><span class="p">(</span><span class="n">readings</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span> <span class="n">count80</span><span class="o">++</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;&gt;50 的有 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">count50</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 个, &gt;80 的有 &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">count80</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; 个&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		
+</span></span><span class="line"><span class="cl">    <span class="c1">// 2. processData接收两个Lambda，作为条件和处理函数
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== 使用processData处理数据 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;报警值(&gt;80): &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">processData</span><span class="p">(</span><span class="n">readings</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="p">[](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">80</span><span class="p">;</span> <span class="p">},</span>         <span class="c1">// condition判断
+</span></span></span><span class="line"><span class="cl">                <span class="p">[](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;! &#34;</span><span class="p">;</span> <span class="p">});</span>    <span class="c1">// handler处理
+</span></span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;正常范围[30,80]: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">processData</span><span class="p">(</span><span class="n">readings</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                <span class="p">[](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="mi">30</span> <span class="o">&amp;&amp;</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="mi">80</span><span class="p">;</span> <span class="p">},</span>
+</span></span><span class="line"><span class="cl">                <span class="p">[](</span><span class="kt">int</span> <span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">x</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span> <span class="p">});</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 3. Lambda作为sort比较器，随时更换排序规则
+</span></span></span><span class="line"><span class="cl">    <span class="n">vector</span><span class="o">&lt;</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&gt;</span> <span class="n">devices</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">devices</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;加热炉A&#34;</span><span class="p">,</span> <span class="mi">85</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">devices</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;反应釜C&#34;</span><span class="p">,</span> <span class="mi">120</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">devices</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;冷却塔B&#34;</span><span class="p">,</span> <span class="mi">28</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">devices</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">make_pair</span><span class="p">(</span><span class="s">&#34;阀门D&#34;</span><span class="p">,</span> <span class="mi">45</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;</span><span class="se">\n</span><span class="s">=== Lambda灵活比较 ===&#34;</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 按数值升序
+</span></span></span><span class="line"><span class="cl">  	<span class="c1">// sort：返回 true/false，告诉 sort：原始容器里这两个元素谁该放前面；sort 根据返回结果，对容器里面原始元素进行交换重排。如果用const pair&lt;string, int&gt; a，会复制一份元素去做比较，然后由sort去调整devices的中的排序
+</span></span></span><span class="line"><span class="cl">    <span class="n">sort</span><span class="p">(</span><span class="n">devices</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">devices</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">         <span class="p">[](</span><span class="k">const</span> <span class="n">pair</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&amp;</span> <span class="n">a</span><span class="p">,</span> <span class="k">const</span> <span class="n">pair</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&amp;</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="k">return</span> <span class="n">a</span><span class="p">.</span><span class="n">second</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">.</span><span class="n">second</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="p">});</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;按数值升序: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">devices</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">devices</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">first</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 按名称字符串长度升序
+</span></span></span><span class="line"><span class="cl">    <span class="n">sort</span><span class="p">(</span><span class="n">devices</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span> <span class="n">devices</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">         <span class="p">[](</span><span class="k">const</span> <span class="n">pair</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&amp;</span> <span class="n">a</span><span class="p">,</span> <span class="k">const</span> <span class="n">pair</span><span class="o">&lt;</span><span class="n">string</span><span class="p">,</span> <span class="kt">int</span><span class="o">&gt;&amp;</span> <span class="n">b</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">             <span class="k">return</span> <span class="n">a</span><span class="p">.</span><span class="n">first</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">b</span><span class="p">.</span><span class="n">first</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">         <span class="p">});</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;按名称长度: &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">devices</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">devices</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">first</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; &#34;</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>输出结果：</p>
+<pre tabindex="0"><code>读数: 15 23 31 39 47 55 63 71 79 87
+
+=== 使用工厂函数创建检查器 ===
+&gt;50 的有 5 个, &gt;80 的有 1 个
+
+=== 使用processData处理数据 ===
+报警值(&gt;80): 87!
+正常范围[30,80]: 31 39 47 55 63 71 79
+
+=== Lambda灵活比较 ===
+按数值升序: 冷却塔B 阀门D 加热炉A 反应釜C
+按名称长度: 阀门D 冷却塔B 加热炉A 反应釜C
+</code></pre>
+
+      </div>
+
+      <footer class="post-footer">
+          <nav class="series-nav">
+            <div class="series-nav-label">
+              <span>Posts 系列</span>
+              <span>31 篇</span>
+            </div>
+            <div class="series-nav-links">
+              <a class="series-nav-prev" href="http://localhost:1313/posts/%E9%AB%98%E7%BA%A7%E7%AF%8706-%E5%85%B3%E8%81%94%E5%AE%B9%E5%99%A8mapset%E4%B8%8E%E8%BF%AD%E4%BB%A3%E5%99%A8%E8%BF%9B%E9%98%B6/">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                <div>
+                  <span class="series-nav-dir">上一篇</span>
+                  <span class="series-nav-title">高级篇06-关联容器：map、set与迭代器进阶</span>
+                </div>
+              </a>
+            </div>
+          </nav>
+      </footer>
+    </article>
+  </div>
+
+  <aside class="article-sidebar"><div class="sidebar-toc" id="sidebar-toc">
+      <div class="toc-title">目录</div>
+      <nav id="toc-nav">
+        <ul><li class="toc-h2">
+            <a href="#1-%e5%87%bd%e6%95%b0%e5%af%b9%e8%b1%a1%e5%9f%ba%e7%a1%80" data-heading="1-函数对象基础">1. 函数对象基础</a>
+          </li><li class="toc-h2">
+            <a href="#2-%e6%a0%87%e5%87%86%e5%ba%93%e4%b8%ad%e7%9a%84%e5%87%bd%e6%95%b0%e5%af%b9%e8%b1%a1" data-heading="2-标准库中的函数对象">2. 标准库中的函数对象</a>
+          </li><li class="toc-h2">
+            <a href="#3-lambda%e8%a1%a8%e8%be%be%e5%bc%8fc11%e5%8c%bf%e5%90%8d%e5%87%bd%e6%95%b0" data-heading="3-lambda表达式c11匿名函数">3. Lambda表达式（C++11）：匿名函数</a>
+          </li><li class="toc-h2">
+            <a href="#4-lambda%e4%b8%8e%e5%87%bd%e6%95%b0%e5%af%b9%e8%b1%a1%e7%bc%96%e8%af%91%e5%99%a8%e7%9a%84%e9%ad%94%e6%b3%95" data-heading="4-lambda与函数对象编译器的魔法">4. Lambda与函数对象：编译器的魔法</a>
+          </li><li class="toc-h2">
+            <a href="#5-mutable-lambda%e4%bf%ae%e6%94%b9%e6%8d%95%e8%8e%b7%e7%9a%84%e5%80%bc" data-heading="5-mutable-lambda修改捕获的值">5. mutable Lambda：修改捕获的值</a>
+          </li><li class="toc-h2">
+            <a href="#6-lambda%e4%bd%9c%e4%b8%ba%e8%bf%94%e5%9b%9e%e5%80%bc%e5%8f%82%e6%95%b0%e5%87%bd%e6%95%b0%e5%bc%8f%e7%bc%96%e7%a8%8b%e9%a3%8e%e6%a0%bc" data-heading="6-lambda作为返回值参数函数式编程风格">6. Lambda作为返回值/参数（函数式编程风格）</a>
+          </li></ul>
+      </nav>
+    </div></aside>
+</div>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2026 <a href="http://localhost:1313/">SciFiReal</a></span> · 
+
+    
+    
+    <span>
+        Powered by
+        <a href="https://gohugo.io/?utm_source=papermod" rel="noopener" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" id="top-link" class="top-link hidden" aria-label="go to top" title="Go to Top (Alt + G)" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevrons-up">
+        <polyline points="17 11 12 6 7 11"></polyline>
+        <polyline points="17 18 12 13 7 18"></polyline>
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu');
+    if (menu) {
+        
+        const scrollPosition = localStorage.getItem("menu-scroll-position");
+        if (scrollPosition) {
+            menu.scrollLeft = parseInt(scrollPosition, 10);
+        }
+        
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var toplink = document.getElementById("top-link");
+    window.onscroll = function () {
+        const scrollThreshold = window.innerHeight;
+        if (document.body.scrollTop > scrollThreshold || document.documentElement.scrollTop > scrollThreshold) {
+            toplink.classList.remove("hidden");
+        } else {
+            toplink.classList.add("hidden");
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        const html = document.querySelector("html");
+        if (html.dataset.theme === "dark") {
+            html.dataset.theme = 'light';
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            html.dataset.theme = 'dark';
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+
+</html>
